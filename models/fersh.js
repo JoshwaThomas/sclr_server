@@ -1,7 +1,8 @@
 const mongoose = require('mongoose')
+const AutoIncrement = require('mongoose-sequence')(mongoose);
 
 const ApplicantSchema = new mongoose.Schema({
-    appno : { type: Number },
+    appno :  Number,
     regno : String,
     name : String,
     ugorpg : String,
@@ -38,7 +39,7 @@ const ApplicantSchema = new mongoose.Schema({
 })
 
 //Apply the auto increment because using application No.
-
+ApplicantSchema.plugin(AutoIncrement, { inc_field: 'appno' });
 
 const ApplicantModel = mongoose.model("applicant", ApplicantSchema)
 module.exports = ApplicantModel
