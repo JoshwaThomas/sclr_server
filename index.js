@@ -31,6 +31,11 @@ app.get("/fresh", (req, res) => {
     .catch(err => res.json(err));
 })
 
+app.get("/renewal", (req,res) => {
+    RenewalModel.find()
+    .then(rusers => res.json(rusers))
+    .catch(err => res.json(err));
+})
 
 app.listen(3001, () => {
     console.log("Server is Running")

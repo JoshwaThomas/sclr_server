@@ -29,6 +29,7 @@ const ApplicantSchema = new mongoose.Schema({
     schoolName : String,
     yearOfPassing : Number,
     percentageOfMarkSchool : Number,
+    preSemester : String,
     semPercentage : Number,
     deeniyathPer : Number,
     classAttendancePer : Number,
