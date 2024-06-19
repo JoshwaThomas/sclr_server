@@ -16,7 +16,7 @@ mongoose.connect("mongodb://127.0.0.1:27017/sclr")
 app.post("/fresh", (req, res) => {
     ApplicantModel.create(req.body)
     .then(users => res.json({ success: true, users }))
-    .catch(err => res.json({ success: false, error: err }));
+    .catch(err => res.json(err));
 })
 
 app.post("/renewal", (req, res) => {
@@ -26,7 +26,9 @@ app.post("/renewal", (req, res) => {
 })
 
 app.get("/fresh", (req, res) => {
-    return res.json(users);
+    ApplicantModel.find()
+    .then(users => res.json(users))
+    .catch(err => res.json(err));
 })
 
 
