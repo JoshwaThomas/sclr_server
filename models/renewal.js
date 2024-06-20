@@ -12,7 +12,7 @@ const RenewalSchema = new mongoose.Schema({
     dept : String,
     section : String,
     religion : String,
-    proCategory : String,
+    procategory : String,
     address : String,
     district : String,
     state : String,
@@ -30,7 +30,7 @@ const RenewalSchema = new mongoose.Schema({
     preSemester: Number,
     semPercentage: Number,
     classAttendancePer : Number,
-    deeniyathattPer : Number,
+    deeniyathPer : Number,
     siblings : Number,
     arrear : Number,
     lastCreditedAmt : Number
