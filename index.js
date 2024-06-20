@@ -3,6 +3,7 @@ const mongoose = require('mongoose')
 const cors = require('cors')
 const ApplicantModel = require('./models/fersh')
 const RenewalModel = require('./models/renewal')
+const StudentModel = require('./models/student')
 
 const app = express()
 app.use(cors({
@@ -14,15 +15,38 @@ app.use(express.json())
 mongoose.connect("mongodb://127.0.0.1:27017/sclr")
 
 app.post("/fresh", (req, res) => {
-    ApplicantModel.create(req.body)
-    .then(users => res.json({ success: true, users }))
-    .catch(err => res.json(err));
+    const { registerNo } = req.body;
+    ApplicantModel.findOne({ registerNo })
+    .then(existingUsers =>{
+        
+        //check the records for one more register
+        if(existingUsers){
+            return res.json({success: false, message: 'Register No. Already Existing'})
+        }
+        //new record created
+        ApplicantModel.create(req.body)
+        .then(users => res.json({ success: true, users }))
+        .catch(err => res.json({success: false, error: err}))
+    })
+    .catch(err => res.json({success: false, error: err}))
+    
 })
 
 app.post("/renewal", (req, res) => {
+    const { registerNo } = req.body;
+    //check the records for one more register
+    RenewalModel.findOne({registerNo})
+    .then(existingUsers =>{
+        if(existingUsers) {
+            return res.json({success: false, message: 'Register No. Already Existing'})
+        }
+    //create a new record
     RenewalModel.create(req.body)
     .then(users => res.json({ success: true, users }))
     .catch(err => res.json({ success: false, error: err }));
+    })
+    .catch(err => res.json({ success: false, error: err }));
+    
 })
 
 app.get("/fresh", (req, res) => {
