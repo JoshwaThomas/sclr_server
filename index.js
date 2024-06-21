@@ -3,7 +3,9 @@ const mongoose = require('mongoose')
 const cors = require('cors')
 const ApplicantModel = require('./models/fersh')
 const RenewalModel = require('./models/renewal')
-const StudentModel = require('./models/student')
+const Student = require('./routes/freshstud')
+
+
 
 const app = express()
 app.use(cors({
@@ -11,6 +13,8 @@ app.use(cors({
     methods: ["GET", "POST", "PATCH", "DELETE"],
 }))
 app.use(express.json())
+//Put reg.no. get the data freshform 
+app.use('/api/students', Student);
 
 mongoose.connect("mongodb://127.0.0.1:27017/sclr")
 
