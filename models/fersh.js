@@ -33,7 +33,20 @@ const ApplicantSchema = new mongoose.Schema({
     semPercentage : Number,
     deeniyathPer : Number,
     classAttendancePer : Number,
-    siblings : String
+    siblings : String,
+    firstSem : Number,
+    secSem : Number,
+    thirdSem : Number,
+    fourSem : Number,
+    fivSem : Number,
+    sixSem : Number,
+    firstAmt : Number,
+    secAmt : Number,
+    thirdAmt : Number,
+    fourAmt : Number,
+    fivAmt : Number,
+    sxAmt : Number
+    
 })
 
 /*const RenewalSchema = new mongoose.Schema({

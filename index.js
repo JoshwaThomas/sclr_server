@@ -4,7 +4,8 @@ const cors = require('cors')
 const ApplicantModel = require('./models/fersh')
 const RenewalModel = require('./models/renewal')
 const Student = require('./routes/freshstud')
-
+const Dashboard = require('./routes/dashboard')
+const Acyear = require('./routes/acyear')
 
 
 const app = express()
@@ -15,6 +16,8 @@ app.use(cors({
 app.use(express.json())
 //Put reg.no. get the data freshform 
 app.use('/api/students', Student);
+app.use('/api/dashboard',Dashboard);
+app.use('/api/admin', Acyear);
 
 mongoose.connect("mongodb://127.0.0.1:27017/sclr")
 

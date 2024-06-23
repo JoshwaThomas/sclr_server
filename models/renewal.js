@@ -33,7 +33,19 @@ const RenewalSchema = new mongoose.Schema({
     deeniyathPer : Number,
     siblings : Number,
     arrear : Number,
-    lastCreditedAmt : Number
+    lastCreditedAmt : Number,
+    
+    secSem : Number,
+    thirdSem : Number,
+    fourSem : Number,
+    fivSem : Number,
+    sixSem : Number,
+    secAmt : Number,
+    thirdAmt : Number,
+    fourAmt : Number,
+    fivAmt : Number,
+    sxAmt : Number
+
 })
 
 //Apply the auto increment because using application No.
