@@ -6,6 +6,9 @@ const RenewalModel = require('./models/renewal')
 const Student = require('./routes/freshstud')
 const Dashboard = require('./routes/dashboard')
 const Acyear = require('./routes/acyear')
+const Donardetails = require('./routes/donardetails')
+const Login = require('./routes/login')
+const Amount = require('./routes/fershamt')
 
 
 const app = express()
@@ -18,6 +21,10 @@ app.use(express.json())
 app.use('/api/students', Student);
 app.use('/api/dashboard',Dashboard);
 app.use('/api/admin', Acyear);
+app.use('/api/admin', Donardetails);
+app.use('/api/admin', Login);
+app.use('/api/admin', Amount);
+
 
 mongoose.connect("mongodb://127.0.0.1:27017/sclr")
 

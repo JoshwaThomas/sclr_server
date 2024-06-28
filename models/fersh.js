@@ -17,11 +17,11 @@ const ApplicantSchema = new mongoose.Schema({
     state : String,
     pin : Number,
     specialCategory : String,
-    community : String,
+    //community : String,
     hostel : String,
     mobileNo : Number,
     emailId : String,
-    aadhar : Number,
+    //aadhar : Number,
     fatherName : String,
     fatherNo : Number,
     fatherOccupation : String,
@@ -34,18 +34,10 @@ const ApplicantSchema = new mongoose.Schema({
     deeniyathPer : Number,
     classAttendancePer : Number,
     siblings : String,
-    firstSem : Number,
-    secSem : Number,
-    thirdSem : Number,
-    fourSem : Number,
-    fivSem : Number,
-    sixSem : Number,
-    firstAmt : Number,
-    secAmt : Number,
-    thirdAmt : Number,
-    fourAmt : Number,
-    fivAmt : Number,
-    sxAmt : Number
+    attendance : String,
+    deeniyathatt : String,
+    hostelrep : String,
+    reason : String
     
 })
 
