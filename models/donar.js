@@ -12,7 +12,9 @@ const DonarSchema = new mongoose.Schema({
     pin : Number,
     scholtype : String,
     amount: Number,
-    scholdate: String, 
+    balance: Number,
+    scholdate: String,
+    date: String, 
 })
 
 

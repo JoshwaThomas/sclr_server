@@ -14,8 +14,9 @@ const Amount = require('./routes/fershamt')
 const app = express()
 app.use(cors({
     origin:"http://localhost:3000",
-    methods: ["GET", "POST", "PATCH", "DELETE"],
+    methods: ["GET", "POST", "PATCH", "DELETE", "PUT"],
 }))
+
 app.use(express.json())
 //Put reg.no. get the data freshform 
 app.use('/api/students', Student);
@@ -74,6 +75,12 @@ app.get("/renewal", (req,res) => {
     .then(rusers => res.json(rusers))
     .catch(err => res.json(err));
 })
+
+app.put('/api/admin/donar/:id', (req, res) => {
+    const donorId = req.params.id;
+    // Handle the PUT request here
+    res.send(`Donor ${donorId} updated successfully`);
+  });
 
 app.listen(3001, () => {
     console.log("Server is Running")

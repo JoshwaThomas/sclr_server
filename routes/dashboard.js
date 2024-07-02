@@ -9,8 +9,8 @@ router.get('/counts', async (req, res) => {
     try {
         const totalApplicants = await ApplicantModel.countDocuments({});
         const totalDonars = await DonarModel.countDocuments({});
-        const ugCount = await ApplicantModel.countDocuments({ ugOrPg: 'ug' });
-        const pgCount = await ApplicantModel.countDocuments({ ugOrPg: 'pg' });
+        const ugCount = await ApplicantModel.countDocuments({ ugOrPg: 'UG' });
+        const pgCount = await ApplicantModel.countDocuments({ ugOrPg: 'PG' });
         const amCount = await ApplicantModel.countDocuments({ procategory: 'Aided' });
         const sfmCount = await ApplicantModel.countDocuments({ procategory: 'SFM' });
         const sfwCount = await ApplicantModel.countDocuments({ procategory: 'SFW' });
