@@ -2,11 +2,14 @@ const express = require('express');
 const router = express.Router();
 const ApplicantModel = require('../models/fersh');
 const DonarModel = require('../models/donar');
-const AmountModel = require('../models/amt')
+const AmountModel = require('../models/amt');
+const RenewalModel = require('../models/renewal');
+
 
 
 router.get('/counts', async (req, res) => {
     try {
+        const totalRenewal = await RenewalModel.countDocuments({});
         const totalApplicants = await ApplicantModel.countDocuments({});
         const totalDonars = await DonarModel.countDocuments({});
         const ugCount = await ApplicantModel.countDocuments({ ugOrPg: 'UG' });
@@ -29,13 +32,17 @@ router.get('/counts', async (req, res) => {
 
         const totalBenefit = await AmountModel.countDocuments({});
         const scholamtdoc = await AmountModel.find({},'scholamt');
+        const donaramtdoc = await DonarModel.find({},'amount');
         const scholamt = scholamtdoc.map(doc => doc.scholamt);
+        const donaramt = donaramtdoc.map(doc => doc.amount);
 
         res.json({
             totalApplicants,
             totalDonars,
             totalBenefit,
             scholamt,
+            donaramt,
+            totalApplication : (totalApplicants + totalRenewal),
             ugPercent: (ugCount / totalApplicants) * 100,
             pgPercent: (pgCount / totalApplicants) * 100,
             amPercent: (amCount / totalApplicants) * 100,

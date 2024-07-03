@@ -76,11 +76,34 @@ app.get("/renewal", (req,res) => {
     .catch(err => res.json(err));
 })
 
+app.post('/api/admin/status', async (req, res) => {
+    const { registerNo, mobileNo } = req.body;
+
+    try {
+        const status = await ApplicantModel.findOne({ registerNo: registerNo });
+
+        if (status) {
+            if (status.mobileNo === mobileNo) {
+                res.json({ status: "exist", action: status.action });
+            } else {
+                res.json({ status: "wrong password" });
+            }
+        } else {
+            res.json({ status: 'not exist' });
+        }
+    } catch (e) {
+        console.log(e);
+        res.status(500).send(e);
+    }
+});
+
 app.put('/api/admin/donar/:id', (req, res) => {
     const donorId = req.params.id;
     // Handle the PUT request here
     res.send(`Donor ${donorId} updated successfully`);
   });
+
+
 
 app.listen(3001, () => {
     console.log("Server is Running")

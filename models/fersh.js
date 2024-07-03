@@ -37,7 +37,8 @@ const ApplicantSchema = new mongoose.Schema({
     attendance : String,
     deeniyathatt : String,
     hostelrep : String,
-    reason : String
+    reason : String,
+    action : Number
     
 })
 

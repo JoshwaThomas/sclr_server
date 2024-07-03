@@ -10,4 +10,25 @@ router.post("/freshamt", (req, res) => {
     
 })
 
+router.get("/freshamt", (req, res) => {
+    AmountModel.find()
+    .then(users => res.json(users))
+    .catch(err => res.json(err));
+})
+
+router.post('/adstatus/:registerNo', async (req, res) =>{
+    try{
+        const student = await AmountModel.findOne({registerNo: req.params.registerNo});
+        if(student){
+            res.json(student);
+        }
+        else{
+            res.status(404).send('Student Register No not found');
+        }
+    }
+    catch(err){
+        res.status(500).send(err);
+    }
+});
+
 module.exports = router;
