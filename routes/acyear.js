@@ -18,5 +18,20 @@ router.post("/acyear", (req, res) => {
     .catch(err => res.json({success: false, error: err}))
     
 })
+router.get('/current-acyear', async (req, res) => {
+    try {
+        // Find the academic year with the highest acid
+        const latestAcademicYear = await AcademicModel.findOne({}, {}, { sort: { acid: -1 } });
+
+        if (!latestAcademicYear) {
+            return res.status(404).json({ success: false, message: 'No active academic year found' });
+        }
+
+        res.status(200).json({ success: true, acyear: latestAcademicYear });
+    } catch (error) {
+        console.error('Error fetching current academic year:', error);
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+});
 
 module.exports = router;

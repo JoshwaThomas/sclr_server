@@ -2,7 +2,9 @@ const mongoose = require('mongoose')
 const AutoIncrement = require('mongoose-sequence')(mongoose);
 
 const DonarSchema = new mongoose.Schema({
+    acyear : String,
     donarId :  Number,
+    pan : String,
     name : String,
     mobileNo : Number,
     emailId : String,  
@@ -22,3 +24,5 @@ DonarSchema.plugin(AutoIncrement, { inc_field: 'donarId' });
 
 const DonarModel = mongoose.model("donar", DonarSchema)
 module.exports = DonarModel
+
+

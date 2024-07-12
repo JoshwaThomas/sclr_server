@@ -1,6 +1,7 @@
 const mongoose = require('mongoose')
 
 const AmountSchema = new mongoose.Schema({
+    acyear : String,
     fresherOrRenewal : String,
     registerNo : String,
     name : String,

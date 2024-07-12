@@ -3,6 +3,7 @@ const AutoIncrement = require('mongoose-sequence')(mongoose);
 
 
 const RenewalSchema = new mongoose.Schema({
+    acyear : String,
     reappno :  Number,
     fresherOrRenewal : String,
     ugOrPg : String,
