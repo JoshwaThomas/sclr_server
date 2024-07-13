@@ -3,6 +3,7 @@ const mongoose = require('mongoose')
 const cors = require('cors')
 const ApplicantModel = require('./models/fersh')
 const RenewalModel = require('./models/renewal')
+const AmountModel = require('./models/amt')
 // const Student = require('./routes/freshstud')
 const Dashboard = require('./routes/dashboard')
 const Acyear = require('./routes/acyear')
@@ -93,18 +94,23 @@ app.get("/fresh", (req, res) => {
 })
 
 //get the student details for using renewal form
-app.get('/api/students/:registerNo', async (req, res) =>{
-    try{
-        const student = await ApplicantModel.findOne({registerNo: req.params.registerNo});
-        if(student){
-            res.json(student);
+app.get('/api/admin/students', async (req, res) => {
+    const { registerNo, mobileNo } = req.query;
+    console.log(`Received request for registerNo: ${registerNo}, mobileNo: ${mobileNo}`);
+
+    try {
+        const student = await ApplicantModel.findOne({ registerNo: registerNo, mobileNo: mobileNo });
+        const amount = await AmountModel.findOne({ registerNo });
+        if (student && amount) {
+            const response = { ...student.toObject(), scholamt: amount.scholamt };
+            res.json(response);
+        } else {
+            console.log('Student or amount not found');
+            res.status(404).send('Student with the specified Register No and Mobile No not found');
         }
-        else{
-            res.status(404).send('Student Register No not found');
-        }
-    }
-    catch(err){
-        res.status(500).send(err);
+    } catch (err) {
+        console.error('Error fetching student data:', err); // Detailed logging
+        res.status(500).send({ message: 'Internal server error', error: err }); // Send full error
     }
 });
 

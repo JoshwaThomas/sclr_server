@@ -23,6 +23,21 @@ router.get("/donors", (req, res) => {
         .catch(err => res.json(err));
 });
 
+// router.get("/students", async (req, res) => {
+//     const { registerNo } = req.query;
+
+//     try {
+//         const student = await AmountModel.findOne({registerNo: registerNo});
+//         if (student) {
+//             res.json(student);
+//         } else {
+//             res.status(404).send('Student with the specified Register No and Mobile No not found');
+//         }
+//     } catch (err) {
+//         res.status(500).send(err);
+//     }
+// });
+
 // router.post('/adstatus/:registerNo', async (req, res) =>{
 //     try{
 //         const student = await AmountModel.findOne({registerNo: req.params.registerNo});
