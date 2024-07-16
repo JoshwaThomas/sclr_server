@@ -101,6 +101,23 @@ router.get('/donar', (req,res) => {
     .then(donars => res.json(donars))
     .catch(err => res.json(err));
 });
+router.get('/scholtypes', (req, res) => {
+    DonarModel.distinct("scholtype")
+        .then(scholtypes => res.json(scholtypes))
+        .catch(err => res.json(err));
+
+});
+router.get('/scholtypelist', (req, res) => {
+    DonarModel.find()
+        .then(scholtypes => res.json(scholtypes))
+        .catch(err => res.json(err));
+
+});
+router.get('/panlist', (req, res) => {
+    DonarModel.find()
+        .then(panList => res.json(panList))
+        .catch(err => res.status(500).json({ error: err.message }));
+});
 router.get('/donar', (req,res) => {
     
     const { pan } = req.body;
