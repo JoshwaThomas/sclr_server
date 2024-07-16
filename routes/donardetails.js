@@ -5,6 +5,7 @@ const DonarModel = require('../models/donar');
 //DonarDataModel contain a duplicate value 
 const DonarDataModel = require('../models/donardata');
 const AmountModel = require('../models/amt');
+const ScholtypeModel = require('../models/scholtype');
 
 
 router.get('/', async (req, res) =>{
@@ -144,6 +145,64 @@ router.post('/freshamt', async (req, res) => {
     } catch (err) {
         res.status(500).send(err);
     }
+});
+
+// Update the Donor Details find and res
+router.get('/donarUpdate', async (req, res) => {
+    try {
+        const { pan } = req.query; 
+        // Check if donor exists in DonarModel
+        let donar = await DonarDataModel.findOne({ pan });
+
+        if (donar) {
+            res.json(donar);
+        } else {
+            res.status(404).json({ message: 'Donor not found' });
+        }
+    } catch (err) {
+        res.status(500).json(err);
+    }
+});
+// Update the Donor Details find  and update
+router.post('/donarUpdate', async (req, res) => {
+    try {
+        const { pan } = req.body;
+
+        // Check if donor exists in DonarModel
+        let donar = await DonarDataModel.findOne({ pan });
+
+        if (donar) {
+           
+            donar = await DonarDataModel.findOneAndUpdate({ pan }, req.body, { new: true });
+            
+            res.json(donar);
+        } 
+    } catch (err) {
+        res.status(500).json(err);
+    }
+});
+
+//Add the scholar Type
+
+router.post('/scholtype', async (req, res) => {
+    try {
+        const { scholtype } = req.body;
+
+        // Check if scholar Type exists
+        ScholtypeModel.findOne({scholtype})
+        .then(existingType=>{
+            if(existingType) {
+                return res.json({success: false, message: 'ScholarType Already Existing'})
+            }
+        ScholtypeModel.create(req.body)
+        .then(users => res.json({ success: true, users }))
+        .catch(err => res.json({ success: false, error: err }));
+        })
+        .catch(err => res.json({ success: false, error: err }));
+    }
+    catch (err) {
+        res.status(500).send(err);
+    }  
 });
 
 module.exports = router;

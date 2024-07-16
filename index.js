@@ -34,6 +34,7 @@ mongoose.connect("mongodb://127.0.0.1:27017/sclr")
 
 app.post("/fresh", (req, res) => {
     const { registerNo } = req.body;
+    // console.log(`Received request for registerNo: ${registerNo}`);
     ApplicantModel.findOne({ registerNo })
     .then(existingUsers =>{
         
@@ -46,9 +47,35 @@ app.post("/fresh", (req, res) => {
         .then(users => res.json({ success: true, users }))
         .catch(err => res.json({success: false, error: err}))
     })
-    .catch(err => res.json({success: false, error: err}))
-    
+    .catch(err => {
+        res.json({success: false, error: err})
+        console.error('Error fetching student data:', err); // Detailed logging
+        res.status(500).send({ message: 'Internal server error', error: err }); 
+        })
 })
+
+// app.post("/fresh", (req, res) => {
+//     const { registerNo } = req.body;
+//     console.log(`Received request for registerNo: ${registerNo}`);
+    
+//     ApplicantModel.findOne({ registerNo })
+//       .then(existingUsers => {
+//         if (existingUsers) {
+//           return res.json({ success: false, message: 'Register No. Already Existing' });
+//         }
+//         ApplicantModel.create(req.body)
+//           .then(users => res.json({ success: true, users }))
+//           .catch(err => {
+//             console.error('Error creating user:', err);
+//             res.json({ success: false, message: 'Error creating user', error: err });
+//           });
+//       })
+//       .catch(err => {
+//         console.error('Error fetching student data:', err);
+//         res.status(500).json({ success: false, message: 'Internal server error', error: err });
+//       });
+//   });
+
 app.post("freshaction/:registerNo", (req, res) =>{
     const {registerNo} = req.body;
         ApplicantModel.findOneAndUpdate({ registerNo }, req.body, { new: true })
@@ -93,7 +120,7 @@ app.get("/fresh", (req, res) => {
     .catch(err => res.json(err));
 })
 
-//get the student details for using renewal form
+//get the student details for using renewal form and check the amount table bcz once fresher recive the amt then apply renewal
 app.get('/api/admin/students', async (req, res) => {
     const { registerNo, mobileNo } = req.query;
     console.log(`Received request for registerNo: ${registerNo}, mobileNo: ${mobileNo}`);
