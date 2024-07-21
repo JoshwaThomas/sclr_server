@@ -4,31 +4,37 @@ const ApplicantModel = require('../models/fersh');
 const DonarModel = require('../models/donar');
 const AmountModel = require('../models/amt');
 const RenewalModel = require('../models/renewal');
-
+const AcademicModel = require('../models/academic');
 
 
 router.get('/counts', async (req, res) => {
     try {
-        const totalRenewal = await RenewalModel.countDocuments({});
-        const totalApplicants = await ApplicantModel.countDocuments({});
-        const totalDonars = await DonarModel.countDocuments({});
-        const ugCount = await ApplicantModel.countDocuments({ ugOrPg: 'UG' });
-        const pgCount = await ApplicantModel.countDocuments({ ugOrPg: 'PG' });
-        const amCount = await ApplicantModel.countDocuments({ procategory: 'Aided' });
-        const sfmCount = await ApplicantModel.countDocuments({ procategory: 'SFM' });
-        const sfwCount = await ApplicantModel.countDocuments({ procategory: 'SFW' });
+        const activeAcademicYear = await AcademicModel.findOne({ active: '1' });
 
-        const fSem = await ApplicantModel.countDocuments({  ugOrPg: 'UG', semester: 'I' });
-        const sSem = await ApplicantModel.countDocuments({  ugOrPg: 'UG', semester: 'II' });
-        const tSem = await ApplicantModel.countDocuments({  ugOrPg: 'UG', semester: 'III' });
-        const fourSem = await ApplicantModel.countDocuments({  ugOrPg: 'UG', semester: 'IV' });
-        const fivSem = await ApplicantModel.countDocuments({  ugOrPg: 'UG', semester: 'V' });
-        const sixSem = await ApplicantModel.countDocuments({  ugOrPg: 'UG',semester: 'VI' });
+        if (!activeAcademicYear) {
+            return res.status(404).json({ message: 'No active academic year found' });
+        }
+        const acyear = activeAcademicYear.acyear;
+        const totalRenewal = await RenewalModel.countDocuments({acyear});
+        const totalApplicants = await ApplicantModel.countDocuments({acyear});
+        const totalDonars = await DonarModel.countDocuments({acyear});
+        const ugCount = await ApplicantModel.countDocuments({acyear, ugOrPg: 'UG' });
+        const pgCount = await ApplicantModel.countDocuments({acyear, ugOrPg: 'PG' });
+        const amCount = await ApplicantModel.countDocuments({ acyear, procategory: 'Aided' });
+        const sfmCount = await ApplicantModel.countDocuments({acyear, procategory: 'SFM' });
+        const sfwCount = await ApplicantModel.countDocuments({acyear, procategory: 'SFW' });
 
-        const pfSem = await ApplicantModel.countDocuments({ ugOrPg: 'PG', semester: 'I' });
-        const psSem = await ApplicantModel.countDocuments({ ugOrPg: 'PG', semester: 'II' });
-        const ptSem = await ApplicantModel.countDocuments({ ugOrPg: 'PG', semester: 'III' });
-        const pfourSem = await ApplicantModel.countDocuments({ ugOrPg: 'PG', semester: 'IV' });
+        const fSem = await ApplicantModel.countDocuments({acyear,  ugOrPg: 'UG', semester: 'I' });
+        const sSem = await ApplicantModel.countDocuments({acyear, ugOrPg: 'UG', semester: 'II' });
+        const tSem = await ApplicantModel.countDocuments({acyear,  ugOrPg: 'UG', semester: 'III' });
+        const fourSem = await ApplicantModel.countDocuments({acyear,  ugOrPg: 'UG', semester: 'IV' });
+        const fivSem = await ApplicantModel.countDocuments({acyear, ugOrPg: 'UG', semester: 'V' });
+        const sixSem = await ApplicantModel.countDocuments({acyear,  ugOrPg: 'UG',semester: 'VI' });
+
+        const pfSem = await ApplicantModel.countDocuments({acyear, ugOrPg: 'PG', semester: 'I' });
+        const psSem = await ApplicantModel.countDocuments({acyear, ugOrPg: 'PG', semester: 'II' });
+        const ptSem = await ApplicantModel.countDocuments({acyear, ugOrPg: 'PG', semester: 'III' });
+        const pfourSem = await ApplicantModel.countDocuments({acyear, ugOrPg: 'PG', semester: 'IV' });
 
         const totalBenefit = await AmountModel.countDocuments({});
         const scholamtdoc = await AmountModel.find({},'scholamt');

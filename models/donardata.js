@@ -2,7 +2,7 @@ const mongoose = require('mongoose')
 // const AutoIncrement = require('mongoose-sequence')(mongoose);
 
 const DonarDataSchema = new mongoose.Schema({
-    // donarId :  Number,
+    did :  String,
     acyear : String,
     pan : String,
     name : String,

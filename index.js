@@ -115,7 +115,7 @@ app.post("/renewal", (req, res) => {
 })
 
 app.get("/fresh", (req, res) => {
-    ApplicantModel.find({action:0})
+    ApplicantModel.find()
     .then(users => res.json(users))
     .catch(err => res.json(err));
 })
@@ -147,6 +147,14 @@ app.get("/renewal", (req,res) => {
     .then(rusers => res.json(rusers))
     .catch(err => res.json(err));
 })
+app.get('/in-progress', async (req, res) => {
+    try {
+        const inProgressApplicants = await ApplicantModel.find({ action: 0 });
+        res.json(inProgressApplicants);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
 
 app.post('/api/admin/studentstatus', async (req, res) => {
     const { registerNo, mobileNo } = req.body;

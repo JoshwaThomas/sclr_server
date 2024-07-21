@@ -6,7 +6,8 @@ const DonarModel = require('../models/donar');
 const DonarDataModel = require('../models/donardata');
 const AmountModel = require('../models/amt');
 const ScholtypeModel = require('../models/scholtype');
-
+const ApplicantModel = require('../models/fersh');
+const RenewalModel = require('../models/renewal');
 
 router.get('/', async (req, res) =>{
     try{
@@ -35,17 +36,20 @@ router.get('/', async (req, res) =>{
 
 router.post('/donar', async (req, res) => {
     try {
-        const { pan } = req.body;
+        const { pan, amount } = req.body;
 
         // Check if donor exists in DonarModel
         let donar = await DonarModel.findOne({ pan });
 
         if (donar) {
+           
+            const newBalance = donar.balance + parseFloat(amount);
+            console.log("Balance :",newBalance)
+            // If donor exists, update the donor information
+            donar = await DonarModel.findOneAndUpdate({ pan }, { ...req.body, balance: newBalance}, { new: true });
+
             donar = await DonarDataModel.create(req.body);
 
-            donar.balance += parseFloat(req.body.amount);
-            // If donor exists, update the donor information
-            donar = await DonarModel.findOneAndUpdate({ pan }, req.body, { new: true });
             
             res.json(donar);
         } else {
@@ -64,8 +68,8 @@ router.post('/donar', async (req, res) => {
 });
 
 router.post("/donardata", (req, res) => {
-    const { pan } = req.body;
-    DonarDataModel.findOne({ pan })
+    const { did } = req.body;
+    DonarDataModel.findOne({ did })
     .then(existingDonar =>{
         
         //check the records for one more register
@@ -83,9 +87,9 @@ router.post("/donardata", (req, res) => {
     
 })
 
-router.get('/donor/:pan', async (req, res) => {
+router.get('/donor/:name', async (req, res) => {
     try {
-        const donor = await DonarModel.findOne({ pan: req.params.pan });
+        const donor = await DonarModel.findOne({ name: req.params.name });
         if (donor) {
             res.json(donor);
         } else {
@@ -167,9 +171,9 @@ router.post('/freshamt', async (req, res) => {
 // Update the Donor Details find and res
 router.get('/donarUpdate', async (req, res) => {
     try {
-        const { pan } = req.query; 
+        const { name } = req.query; 
         // Check if donor exists in DonarModel
-        let donar = await DonarDataModel.findOne({ pan });
+        let donar = await DonarDataModel.findOne({ name });
 
         if (donar) {
             res.json(donar);
@@ -220,6 +224,85 @@ router.post('/scholtype', async (req, res) => {
     catch (err) {
         res.status(500).send(err);
     }  
+});
+
+//All the Report
+router.get('/allreport', async (req, res) => {
+    try {
+        const amounts = await AmountModel.find();
+        const applicants = await ApplicantModel.find();
+        const donars = await DonarModel.find();
+
+        const combinedData = amounts.map(amount => {
+            const applicant = applicants.find(app => app.registerNo === amount.registerNo);
+            const donar = donars.find(don => don._id.toString() === amount.scholdonar);
+
+            return {
+                ...amount.toObject(),
+                ...applicant ? applicant.toObject() : {},
+                ...donar ? donar.toObject() : {},
+                donarName: donar ? donar.name : null,
+                smobileNo: applicant ? applicant.mobileNo : null,
+                name: applicant ? applicant.name : null, 
+            };
+        });
+
+        res.json(combinedData);
+    } catch (err) {
+        res.json(err);
+    }
+});
+router.get('/studreport', async (req, res) => {
+    try {
+        const applicants = await ApplicantModel.find();
+        const renewals = await RenewalModel.find();
+
+        const updatedApplicants = applicants.map(applicant => {
+            let actionStatus;
+            switch(applicant.action) {
+                case 0:
+                    actionStatus = 'pending';
+                    break;
+                case 1:
+                    actionStatus = 'accepted';
+                    break;
+                case 2:
+                    actionStatus = 'rejected';
+                    break;
+                default:
+                    actionStatus = 'unknown';
+            }
+            return {
+                ...applicant.toObject(),
+                action: actionStatus
+            };
+        });
+        const updatedRenewal = renewals.map(renewal =>{
+            let actionStatus;
+            switch(renewal.action) {
+                case 0:
+                    actionStatus = 'pending';
+                    break;
+                case 1:
+                    actionStatus = 'accepted';
+                    break;
+                case 2:
+                    actionStatus = 'rejected';
+                    break;
+                default:
+                    actionStatus = 'unknown';
+            }
+            return {
+                ...renewal.toObject(),
+                action: actionStatus
+            };
+        });
+
+        const combine = [...updatedApplicants, ...updatedRenewal];
+        res.json(combine);
+    } catch (err) {
+        res.json(err);
+    }
 });
 
 module.exports = router;

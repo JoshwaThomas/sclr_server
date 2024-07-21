@@ -40,7 +40,7 @@ const ApplicantSchema = new mongoose.Schema({
     hostelrep : String,
     reason : String,
     action: {
-        type: String,
+        type: Number,
         default: 0
     }
 })
