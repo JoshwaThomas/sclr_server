@@ -45,7 +45,11 @@ const RenewalSchema = new mongoose.Schema({
     thirdAmt : Number,
     fourAmt : Number,
     fivAmt : Number,
-    sxAmt : Number
+    sxAmt : Number,
+    action: {
+        type: Number,
+        default: 0
+    }
 
 })
 
