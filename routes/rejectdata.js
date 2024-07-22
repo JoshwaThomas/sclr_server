@@ -14,14 +14,56 @@ router.post("/reject", (req, res) => {
     
 })
 
+
+router.get('/studawardreport', async (req, res) => {
+    try {
+        // Aggregate records by registerNo and acyear
+        const amountData = await AmountModel.aggregate([
+            {
+                $group: {
+                    _id: {
+                        registerNo: '$registerNo',
+                        acyear: '$acyear'
+                    },
+                    totalScholamt: { $sum: '$scholamt' },
+                    name: { $first: '$name' },
+                    dept: { $first: '$dept' }
+                }
+            },
+            {
+                $project: {
+                    registerNo: '$_id.registerNo',
+                    acyear: '$_id.acyear',
+                    totalScholamt: 1,
+                    name: 1,
+                    dept: 1,
+                    _id: 0
+                }
+            }
+        ]);
+
+        // Send the aggregated data
+        res.json(amountData);
+    } catch (e) {
+        console.error(e);
+        res.status(500).send(e);
+    }
+});
+
 router.get('/status/:registerNo', async (req, res) => {
     try {
         const { registerNo } = req.params;
 
         // Sequentially check each model for data
-        let data = await AmountModel.findOne({ registerNo });
-        if (data) {
-            return res.json(data);
+        // let data = await AmountModel.findOne({ registerNo });
+        // if (data) {
+        //     return res.json(data);
+        // }
+        const amountData = await AmountModel.find({ registerNo });
+        if (amountData && amountData.length > 0) {
+            const totalScholamt = amountData.reduce((sum, entry) => sum + entry.scholamt, 0);
+            console.log(totalScholamt)
+            return res.json({ ...amountData[0]._doc, totalScholamt });
         }
 
         data = await RejectModel.findOne({ registerNo });

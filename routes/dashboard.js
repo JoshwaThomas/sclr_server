@@ -36,7 +36,7 @@ router.get('/counts', async (req, res) => {
         const ptSem = await ApplicantModel.countDocuments({acyear, ugOrPg: 'PG', semester: 'III' });
         const pfourSem = await ApplicantModel.countDocuments({acyear, ugOrPg: 'PG', semester: 'IV' });
 
-        const totalBenefit = await AmountModel.countDocuments({});
+        const totalBenefit = await AmountModel.countDocuments({acyear});
         const scholamtdoc = await AmountModel.find({},'scholamt');
         const donaramtdoc = await DonarModel.find({},'amount');
         const scholamt = scholamtdoc.map(doc => doc.scholamt);

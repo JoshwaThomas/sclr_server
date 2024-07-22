@@ -305,4 +305,15 @@ router.get('/studreport', async (req, res) => {
     }
 });
 
+router.get("/donoravl", (req,res) => {
+    DonarModel.find()
+    .then(rusers => res.json(rusers))
+    .catch(err => res.json(err));
+})
+router.get("/donoracyear-report", (req,res) => {
+    DonarDataModel.find()
+    .then(rusers => res.json(rusers))
+    .catch(err => res.json(err));
+})
+
 module.exports = router;
