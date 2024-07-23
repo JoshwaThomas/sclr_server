@@ -4,6 +4,7 @@ const RejectModel = require('../models/reject');
 const AmountModel = require('../models/amt');
 const ApplicantModel = require('../models/fersh');
 const RenewalModel = require('../models/renewal');
+const DonarModel = require('../models/donardata');
 
 
 router.post("/reject", (req, res) => {
@@ -85,9 +86,29 @@ router.get('/status/:registerNo', async (req, res) => {
         return res.json({ status: 'not exist' });
     } catch (e) {
         console.log(e);
-        return res.status(500).send(e);
+        return res.status(500).json({ status: 'error', message: 'An error occurred while fetching the student data' });
     }
 });
 
+router.get('/donarletter', async (req, res) => {
+    try {
+        const { name } = req.query;
+        const donar = await DonarModel.findOne({ name });
+
+        if (donar) {
+            const donorId= donar._id
+            console.log(donorId)
+            const donoramt = await AmountModel.findOne({donorId: 'scholdonar'})
+            console.log(donoramt)
+            res.json(donar);
+
+        } else {
+            res.status(404).json({ message: 'Donor not found' });
+        }
+    } catch (err) {
+        console.error('Error fetching donor data:', err);  // Improved error logging
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
 module.exports = router;
 

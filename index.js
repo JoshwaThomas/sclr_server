@@ -183,6 +183,21 @@ app.put('/api/admin/donar/:id', (req, res) => {
     res.send(`Donor ${donorId} updated successfully`);
   });
 
+  app.post('/api/admin/student/update', async (req, res) => {
+    try {
+        const { registerNo } = req.body;
+        
+        const update = await ApplicantModel.findOneAndUpdate({ registerNo }, req.body, { new: true });
+
+        if (update) {
+            res.json(update);
+        } else {
+            res.status(404).json({ message: 'Student not found' });
+        }
+    } catch (err) {
+        res.status(500).json(err);
+    }
+});
 
 
 app.listen(3001, () => {

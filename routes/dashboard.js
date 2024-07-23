@@ -18,8 +18,8 @@ router.get('/counts', async (req, res) => {
         const totalRenewal = await RenewalModel.countDocuments({acyear});
         const totalApplicants = await ApplicantModel.countDocuments({acyear});
         const totalDonars = await DonarModel.countDocuments({acyear});
-        const ugCount = await ApplicantModel.countDocuments({acyear, ugOrPg: 'UG' });
-        const pgCount = await ApplicantModel.countDocuments({acyear, ugOrPg: 'PG' });
+        const ugCount = await ApplicantModel.countDocuments({acyear, fresherOrRenewal: 'Fresher' });
+        const pgCount = await RenewalModel.countDocuments({acyear, fresherOrRenewal: 'renewal' });
         const amCount = await ApplicantModel.countDocuments({ acyear, procategory: 'Aided' });
         const sfmCount = await ApplicantModel.countDocuments({acyear, procategory: 'SFM' });
         const sfwCount = await ApplicantModel.countDocuments({acyear, procategory: 'SFW' });
@@ -37,8 +37,8 @@ router.get('/counts', async (req, res) => {
         const pfourSem = await ApplicantModel.countDocuments({acyear, ugOrPg: 'PG', semester: 'IV' });
 
         const totalBenefit = await AmountModel.countDocuments({acyear});
-        const scholamtdoc = await AmountModel.find({},'scholamt');
-        const donaramtdoc = await DonarModel.find({},'amount');
+        const scholamtdoc = await AmountModel.find({acyear},'scholamt');
+        const donaramtdoc = await DonarModel.find({acyear},'amount');
         const scholamt = scholamtdoc.map(doc => doc.scholamt);
         const donaramt = donaramtdoc.map(doc => doc.amount);
 
@@ -49,12 +49,12 @@ router.get('/counts', async (req, res) => {
             scholamt,
             donaramt,
             totalApplication : (totalApplicants + totalRenewal),
-            ugPercent: (ugCount / totalApplicants) * 100,
-            pgPercent: (pgCount / totalApplicants) * 100,
+            ugPercent: (ugCount /  (totalApplicants + totalRenewal)) * 100,
+            pgPercent: (pgCount / (totalApplicants + totalRenewal)) * 100,
             amPercent: (amCount / totalApplicants) * 100,
             sfmPercent: (sfmCount / totalApplicants) * 100,
             sfwPercent: (sfwCount / totalApplicants) * 100,
-            mensTotal: (amCount + sfmCount / totalApplicants) * 100,
+            mensTotal: ((amCount + sfmCount) / totalApplicants) * 100,
             firstYear: (fSem + sSem),
             secYear: (tSem + fourSem),
             thirdYear: (fivSem + sixSem),
