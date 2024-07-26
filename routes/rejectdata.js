@@ -4,15 +4,16 @@ const RejectModel = require('../models/reject');
 const AmountModel = require('../models/amt');
 const ApplicantModel = require('../models/fersh');
 const RenewalModel = require('../models/renewal');
-const DonarModel = require('../models/donardata');
+const DonarDataModel = require('../models/donardata');
+const DonarModel = require('../models/donar')
 
 
 router.post("/reject", (req, res) => {
     RejectModel.create(req.body)
-    .then(result => res.json({ success: true, result }))
-    .catch(err => res.json(err));
-    
-    
+        .then(result => res.json({ success: true, result }))
+        .catch(err => res.json(err));
+
+
 })
 
 
@@ -90,23 +91,115 @@ router.get('/status/:registerNo', async (req, res) => {
     }
 });
 
+router.get('/studstatus', async (req, res) => {
+    try {
+        const { registerNo, mobileNo } = req.query;
+
+        let applicant = await RenewalModel.findOne({ registerNo });
+
+        if (!applicant) {
+            applicant = await ApplicantModel.findOne({ registerNo });
+        }
+
+        if (applicant) {
+            // console.log("Applicant's Mobile No:", applicant.mobileNo);
+            // console.log("Provided Mobile No:", mobileNo);
+
+
+            if (String(applicant.mobileNo).trim() === String(mobileNo).trim()) {
+                // console.log('RegisterNo & mobileNo are matched');
+
+                const amountData = await AmountModel.find({ registerNo });
+
+                if (amountData && amountData.length > 0) {
+                    const totalScholamt = amountData.reduce((sum, entry) => sum + entry.scholamt, 0);
+                    console.log(totalScholamt);
+                    return res.json({ ...amountData[0]._doc, totalScholamt, success: true, message: `Applications are Selected : ${totalScholamt}` });
+                }
+
+                let data = await RejectModel.findOne({ registerNo });
+                if (data) {
+                    return res.json({ ...data._doc, success: true, message: `Your Application is Rejected : ${data.reason}` });
+                }
+
+                data = await RenewalModel.findOne({ registerNo });
+                if (data) {
+                    return res.json({ ...data._doc, message: 'Your Application is Processed' });
+                }
+
+                return res.json({ ...applicant._doc, success: true, message: 'Your Application is Processed' });
+            } else {
+                return res.json({ success: false, message: 'Reg. No & Mobile No Mismatched' });
+            }
+        } else {
+            return res.json({ success: false, message: 'Applicant does not exist' });
+        }
+    } catch (e) {
+        console.log(e);
+        return res.status(500).json({ status: 'error', message: 'An error occurred while fetching the student data' });
+    }
+});
 router.get('/donarletter', async (req, res) => {
     try {
         const { name } = req.query;
-        const donar = await DonarModel.findOne({ name });
+        console.log(`Searching for donor with name: ${name}`);
+
+        const donar = await DonarDataModel.findOne({ name });
+        console.log('Donar data:', donar);
 
         if (donar) {
-            const donorId= donar._id
-            console.log(donorId)
-            const donoramt = await AmountModel.findOne({donorId: 'scholdonar'})
-            console.log(donoramt)
-            res.json(donar);
+            const donorId = donar.did;
+            console.log(`Found donorId (did): ${donorId}`);
 
+            if (!donorId) {
+                return res.status(404).json({ message: 'Did not found in DonarDataModel' });
+            }
+
+            const donorIdfind = await DonarModel.findOne({ did: donorId });
+            console.log('DonarModel data:', donorIdfind);
+
+            if (donorIdfind) {
+                const donorId1 = donorIdfind._id;
+                console.log(`Found donorId1 (_id): ${donorId1}`);
+
+                const donoramt = await AmountModel.find({ scholdonar: donorId1 });
+                console.log('AmountModel data:', donoramt);
+
+                if(donoramt.length > 0) {
+                    const studreg = donoramt[0].registerNo;  // Access the first element's registerNo
+                    console.log(`Student reg.no: ${studreg}`);
+
+                    const stud = await ApplicantModel.findOne({ registerNo: studreg });
+                    if (stud) {
+                        console.log('Student details:', stud);
+                        res.json({
+                            donorname: donar.name,
+                            donordate: donar.scholdate,
+                            donoramount: donar.amount,
+                            studname: stud.name,
+                            studdept: stud.dept,
+                            studreg: stud.registerNo,
+                            donoramtscholamt: donoramt[0].scholamt,  
+                            studmobileNo: stud.mobileNo, 
+                            donar,
+                            donoramt,
+                            stud
+                        });
+                    } else {
+                        res.status(404).json({ message: 'Student not found' });
+                    }
+
+                } else {
+                    res.status(404).json({ message: 'Amount not found' });
+                }
+            } else {
+                res.status(404).json({ message: 'Donor not found in DonarModel' });
+            }
         } else {
-            res.status(404).json({ message: 'Donor not found' });
+            res.status(404).json({ message: 'Donor not found in DonarDataModel' });
         }
     } catch (err) {
-        console.error('Error fetching donor data:', err);  // Improved error logging
+        console.error('Error fetching donor data:', err);
         res.status(500).json({ error: 'Internal server error' });
     }
 });

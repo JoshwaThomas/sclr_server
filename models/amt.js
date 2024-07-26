@@ -8,7 +8,8 @@ const AmountSchema = new mongoose.Schema({
     dept : String,
     scholtype : String,
     scholdonar : String,
-    scholamt : Number
+    scholamt : Number,
+    amtdate: { type: Date, default: Date.now }
 })
 
 
