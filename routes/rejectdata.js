@@ -146,6 +146,8 @@ router.get('/donarletter', async (req, res) => {
 
         const donar = await DonarDataModel.findOne({ name });
         console.log('Donar data:', donar);
+        const donoramount = donar.amount
+        console.log('Donor Amount:', donoramount)
 
         if (donar) {
             const donorId = donar.did;
@@ -169,18 +171,18 @@ router.get('/donarletter', async (req, res) => {
                     const studreg = donoramt[0].registerNo;  // Access the first element's registerNo
                     console.log(`Student reg.no: ${studreg}`);
 
-                    const stud = await ApplicantModel.findOne({ registerNo: studreg });
+                    const stud = await ApplicantModel.find({ registerNo: studreg });
                     if (stud) {
                         console.log('Student details:', stud);
                         res.json({
                             donorname: donar.name,
                             donordate: donar.scholdate,
                             donoramount: donar.amount,
-                            studname: stud.name,
-                            studdept: stud.dept,
-                            studreg: stud.registerNo,
+                            studname: stud[0].name,
+                            studdept: stud[0].dept,
+                            studreg: stud[0].registerNo,
                             donoramtscholamt: donoramt[0].scholamt,  
-                            studmobileNo: stud.mobileNo, 
+                            studmobileNo: stud[0].mobileNo, 
                             donar,
                             donoramt,
                             stud
@@ -202,6 +204,8 @@ router.get('/donarletter', async (req, res) => {
         console.error('Error fetching donor data:', err);
         res.status(500).json({ error: 'Internal server error' });
     }
-});
+})
+
+
 module.exports = router;
 
