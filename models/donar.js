@@ -3,7 +3,7 @@ const mongoose = require('mongoose')
 
 const DonarSchema = new mongoose.Schema({
     acyear : String,
-    did :  Number,
+    did :  String,
     pan : String,
     name : String,
     mobileNo : Number,

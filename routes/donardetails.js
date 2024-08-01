@@ -67,25 +67,26 @@ router.post('/donar', async (req, res) => {
     }
 });
 
-router.post("/donardata", (req, res) => {
+router.post("/donardata", async (req, res) => {
     const { did } = req.body;
-    DonarDataModel.findOne({ did })
-    .then(existingDonar =>{
-        
-        //check the records for one more register
-        if(existingDonar){
-            return res.json({success: false, message: 'Donor Already Existing'})
-        }
-        //new record created
-        DonarDataModel.create(req.body)
-        DonarModel.create(req.body)
 
-        .then(donars => res.json({ success: true, donars }))
-        .catch(err => res.json({success: false, error: err}))
-    })
-    .catch(err => res.json({success: false, error: err}))
-    
-})
+    try {
+        const existingDonar = await DonarDataModel.findOne({ did });
+        if (existingDonar) {
+            return res.json({ success: false, message: 'Donor Already Existing' });
+        }
+
+        const donarModelData = await DonarModel.create(req.body);
+        const donarDataModelData = await DonarDataModel.create(req.body);
+        // console.log(donarModelData)
+        // console.log(donarDataModelData)
+
+        return res.json({ success: true, donarModelData, donarDataModelData });
+    } catch (err) {
+        console.error("Error saving donor data:", err);
+        return res.json({ success: false, error: err });
+    }
+});
 
 router.get('/donor/:name', async (req, res) => {
     try {

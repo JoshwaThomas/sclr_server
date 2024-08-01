@@ -5,7 +5,10 @@ const AutoIncrement = require('mongoose-sequence')(mongoose);
 const RenewalSchema = new mongoose.Schema({
     acyear : String,
     reappno :  Number,
-    fresherOrRenewal : String,
+    fresherOrRenewal : {
+        type: String,
+        default : 'Renewal'
+    },
     ugOrPg : String,
     semester : String,
     name : String,
@@ -29,23 +32,33 @@ const RenewalSchema = new mongoose.Schema({
     fatherOccupation : String,
     annualIncome : Number,
     preSemester: Number,
-    semPercentage: Number,
-    classAttendancePer : Number,
-    deeniyathPer : Number,
+    semPercentage : {
+        type: Number,
+        default: 0
+    },
+    deeniyathPer : {
+        type: Number,
+        default: 0
+    },
+    classAttendancePer :{
+        type: Number,
+        default: 0
+    },
+    classAttendanceRem :{
+        type: String,
+        default: 'Good'
+    },
+    deeniyathRem :{
+        type: String,
+        default: 'Good'
+    },
+    semRem :{
+        type: String,
+        default: 'Good'
+    },
     siblings : Number,
     arrear : Number,
     lastCreditedAmt : Number,
-    
-    secSem : Number,
-    thirdSem : Number,
-    fourSem : Number,
-    fivSem : Number,
-    sixSem : Number,
-    secAmt : Number,
-    thirdAmt : Number,
-    fourAmt : Number,
-    fivAmt : Number,
-    sxAmt : Number,
     action: {
         type: Number,
         default: 0

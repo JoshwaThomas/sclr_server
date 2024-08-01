@@ -4,7 +4,10 @@ const AutoIncrement = require('mongoose-sequence')(mongoose);
 const ApplicantSchema = new mongoose.Schema({
     appno :  Number,
     acyear : String,
-    fresherOrRenewal : String,
+    fresherOrRenewal : {
+        type: String,
+        default : 'Fresher'
+    },
     ugOrPg : String,
     semester : String,
     name : String,
@@ -22,7 +25,7 @@ const ApplicantSchema = new mongoose.Schema({
     hostel : String,
     mobileNo : Number,
     emailId : String,
-    //aadhar : Number,
+    aadhar : Number,
     fatherName : String,
     fatherNo : Number,
     fatherOccupation : String,
@@ -31,18 +34,44 @@ const ApplicantSchema = new mongoose.Schema({
     yearOfPassing : Number,
     percentageOfMarkSchool : Number,
     preSemester : String,
-    semPercentage : Number,
-    deeniyathPer : Number,
-    classAttendancePer : Number,
+    semPercentage : {
+        type: Number,
+        default: 0
+    },
+    deeniyathPer : {
+        type: Number,
+        default: 0
+    },
+    classAttendancePer :{
+        type: Number,
+        default: 0
+    },
+    classAttendanceRem :{
+        type: String,
+        default: 'Good'
+    },
+    deeniyathRem :{
+        type: String,
+        default: 'Good'
+    },
+    semRem :{
+        type: String,
+        default: 'Good'
+    },
     siblings : String,
     attendance : String,
-    deeniyathatt : String,
+    deeniyath : String,
     hostelrep : String,
     reason : String,
+    siblingsNo : Number,
+    siblingsOccupation : String,
+    siblingsIncome : Number,
+    jamath: String,
     action: {
         type: Number,
         default: 0
-    }
+    },
+    password: String,
 })
 
 //Apply the auto increment because using application No.
