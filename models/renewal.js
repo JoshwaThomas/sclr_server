@@ -57,6 +57,9 @@ const RenewalSchema = new mongoose.Schema({
         default: 'Good'
     },
     siblings : Number,
+    siblingsNo : Number,
+    siblingsOccupation : String,
+    siblingsIncome : Number,
     arrear : Number,
     lastCreditedAmt : Number,
     action: {
