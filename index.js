@@ -212,26 +212,27 @@ app.put("/freshdeeniyathUpdate", async (req, res) => {
 });
 
 app.put("/freshsemUpdate", async (req, res) => {
-    const { updates, remarks } = req.body;
+    const { updates, remarks, arrears } = req.body;
 
     try {
         const updatePromises = Object.entries(updates).map(async ([registerNo, semPercentage]) => {
             const remark = remarks[registerNo];
-            
+            const arrear = arrears[registerNo];
+
             // Check if the registerNo exists in RenewalModel
             const renewalUser = await RenewalModel.findOne({ registerNo });
             if (renewalUser) {
-                // Update RenewalModel only
+                // Update RenewalModel
                 return RenewalModel.findOneAndUpdate(
                     { registerNo },
-                    { semPercentage, semRem: remark },
+                    { semPercentage, semRem: remark, arrear },
                     { new: true }
                 );
             } else {
                 // If not in RenewalModel, update ApplicantModel
                 return ApplicantModel.findOneAndUpdate(
                     { registerNo },
-                    { semPercentage, semRem: remark },
+                    { semPercentage, semRem: remark, arrear },
                     { new: true }
                 );
             }

@@ -60,7 +60,10 @@ const RenewalSchema = new mongoose.Schema({
     siblingsNo : Number,
     siblingsOccupation : String,
     siblingsIncome : Number,
-    arrear : Number,
+    arrear : {
+        type: Number,
+        default: 0
+    },
     lastCreditedAmt : Number,
     action: {
         type: Number,

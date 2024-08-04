@@ -58,6 +58,10 @@ const ApplicantSchema = new mongoose.Schema({
         type: String,
         default: 'Good'
     },
+    arrear : {
+        type: Number,
+        default: 0
+    },
     siblings : String,
     attendance : String,
     deeniyath : String,
