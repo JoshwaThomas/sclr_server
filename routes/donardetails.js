@@ -261,9 +261,9 @@ router.post('/freshamt', async (req, res) => {
 // Update the Donor Details find and res
 router.get('/donarUpdate', async (req, res) => {
     try {
-        const { name } = req.query; 
+        const { did } = req.query; 
         // Check if donor exists in DonarModel
-        let donar = await DonarDataModel.findOne({ name });
+        let donar = await DonarDataModel.findOne({ did });
 
         if (donar) {
             res.json(donar);
@@ -277,14 +277,15 @@ router.get('/donarUpdate', async (req, res) => {
 // Update the Donor Details find  and update
 router.post('/donarUpdate', async (req, res) => {
     try {
-        const { pan } = req.body;
+        const { did } = req.body;
 
         // Check if donor exists in DonarModel
-        let donar = await DonarDataModel.findOne({ pan });
+        let donar = await DonarDataModel.findOne({ did });
 
         if (donar) {
            
-            donar = await DonarDataModel.findOneAndUpdate({ pan }, req.body, { new: true });
+            donar = await DonarDataModel.updateMany({ did }, req.body, { new: true });
+            donar = await DonarModel.findOneAndUpdate({ did }, req.body, { new: true });
             
             res.json(donar);
         } 

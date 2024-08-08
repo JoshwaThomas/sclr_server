@@ -53,10 +53,22 @@ router.put('/staffmang/:id', async (req, res) => {
 router.put('/staffsetting/:staffId', async (req, res) => {
     const { staffId } = req.params;
     const { password } = req.body;
+    console.log(staffId)
+    console.log(password)
   
     try {
-      const updatedStaff = await Staff.findOneUpdate(staffId, { password }, { new: true });
-      res.json(updatedStaff);
+        // Assuming `Staff` is your model and `staffId` is the field to identify the staff
+        const updatedStaff = await Staff.findOneAndUpdate(
+            { staffId }, // Query to find the staff by `staffId`
+            { password }, // Update the password field
+            { new: true } // Return the updated document
+        );
+
+        if (!updatedStaff) {
+            return res.status(404).json({ error: 'Staff not found' });
+        }
+
+        res.json(updatedStaff);
     } catch (err) {
       res.status(500).json({ error: 'Failed to update password' });
     }
