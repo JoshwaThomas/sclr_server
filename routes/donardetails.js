@@ -34,23 +34,76 @@ router.get('/', async (req, res) =>{
 //         .catch(err => res.json(err));
 // });
 
+// router.post('/donar', async (req, res) => {
+//     try {
+//         const { did, amount, zakkathamt } = req.body;
+
+//         // Check if donor exists in DonarModel
+//         let donar = await DonarModel.findOne({ did });
+//         console.log('Did :', did);
+
+//         if (donar) {
+//             const newzakkathBalance = donar.zakkathbal + parseFloat(zakkathamt);
+//             const newBalance = donar.balance + parseFloat(amount);
+//             console.log("Balance :",newBalance);
+//             console.log("Zakkath Balance :",newzakkathBalance);
+//             // If donor exists, update the donor information
+//             // await DonarModel.findOneAndUpdate({ did }, { ...req.body, balance: newBalance, zakkathbal: newzakkathBalance}, { new: true });
+
+//             // donar = await DonarDataModel.create(req.body);
+//             const updatedData = {
+//                 ...donar.toObject(),
+//                 ...req.body,
+//                 balance: newBalance,
+//                 zakkathbal: newzakkathBalance,
+//             };
+
+//             donar = await DonarModel.findOneAndUpdate({ did }, updatedData, { new: true });
+//             await DonarDataModel.create(req.body);
+
+//             res.json(donar);
+            
+           
+//         } else {
+//             // If donor doesn't exist, create a new entry in DonarDataModel
+//             donar = await DonarDataModel.create(req.body);
+
+//             // Save the same data in DonarModel
+//             const newDonar = new DonarModel(req.body);
+//             await newDonar.save();
+
+//             res.json(donar);
+//         }
+//     } catch (err) {
+//         res.status(500).json(err);
+//     }
+// });
 router.post('/donar', async (req, res) => {
     try {
-        const { pan, amount } = req.body;
+        const { did, amount = '0', zakkathamt = '0' } = req.body;
+
+        // Parse amounts to ensure they are numbers
+        const parsedAmount = parseFloat(amount) || 0;
+        const parsedZakkathAmt = parseFloat(zakkathamt) || 0;
 
         // Check if donor exists in DonarModel
-        let donar = await DonarModel.findOne({ pan });
+        let donar = await DonarModel.findOne({ did });
 
         if (donar) {
-           
-            const newBalance = donar.balance + parseFloat(amount);
-            console.log("Balance :",newBalance)
+            const newZakkathBalance = donar.zakkathbal + parsedZakkathAmt;
+            const newBalance = donar.balance + parsedAmount;
+            console.log("Balance:", newBalance);
+            console.log("Zakkath Balance:", newZakkathBalance);
+
             // If donor exists, update the donor information
-            donar = await DonarModel.findOneAndUpdate({ pan }, { ...req.body, balance: newBalance}, { new: true });
+            donar = await DonarModel.findOneAndUpdate(
+                { did },
+                { ...req.body, balance: newBalance, zakkathbal: newZakkathBalance },
+                { new: true }
+            );
 
             donar = await DonarDataModel.create(req.body);
 
-            
             res.json(donar);
         } else {
             // If donor doesn't exist, create a new entry in DonarDataModel
@@ -63,9 +116,11 @@ router.post('/donar', async (req, res) => {
             res.json(donar);
         }
     } catch (err) {
+        console.error("Error saving donor data:", err);
         res.status(500).json(err);
     }
 });
+
 
 router.post("/donardata", async (req, res) => {
     const { did } = req.body;
@@ -88,9 +143,22 @@ router.post("/donardata", async (req, res) => {
     }
 });
 
-router.get('/donor/:name', async (req, res) => {
+// router.get('/donor/:name', async (req, res) => {
+//     try {
+//         const donor = await DonarModel.findOne({ name: req.params.name });
+//         if (donor) {
+//             res.json(donor);
+//         } else {
+//             res.status(404).send('Donor not found');
+//         }
+//     } catch (err) {
+//         res.status(500).send(err);
+//     }
+// });
+
+router.get('/donor/:did', async (req, res) => {
     try {
-        const donor = await DonarModel.findOne({ name: req.params.name });
+        const donor = await DonarModel.findOne({ did: req.params.did });
         if (donor) {
             res.json(donor);
         } else {
@@ -100,6 +168,7 @@ router.get('/donor/:name', async (req, res) => {
         res.status(500).send(err);
     }
 });
+
 router.get('/donar', (req,res) => {
     
     DonarModel.find()
@@ -137,16 +206,36 @@ router.get('/donardata', (req,res) => {
 });
 
 //Accept Amount transanction function check the balance for donar_balance 
+// router.put('/donar/:id', async (req, res) => {
+//     try {
+//         const donor = await DonarModel.findById(req.params.id);
+//         if (donor) {
+//             if (donor.balance >= req.body.amount) {
+//                 donor.balance -= parseFloat(req.body.amount);
+//                 await donor.save();
+//                 res.status(200).json({ updatedBalance: donor.balance });
+//             } else {
+//                 res.status(400).json({ message: 'Insufficient balance', availableBalance: donor.balance });
+//             }
+//         } else {
+//             res.status(404).send('Donor not found');
+//         }
+//     } catch (err) {
+//         res.status(500).send(err);
+//     }
+// });
+
 router.put('/donar/:id', async (req, res) => {
     try {
         const donor = await DonarModel.findById(req.params.id);
         if (donor) {
-            if (donor.balance >= req.body.amount) {
-                donor.balance -= parseFloat(req.body.amount);
+            const balanceField = req.body.balanceField || 'balance';
+            if (donor[balanceField] >= req.body.amount) {
+                donor[balanceField] -= parseFloat(req.body.amount);
                 await donor.save();
-                res.status(200).json({ updatedBalance: donor.balance });
+                res.status(200).json({ updatedBalance: donor[balanceField] });
             } else {
-                res.status(400).json({ message: 'Insufficient balance', availableBalance: donor.balance });
+                res.status(400).json({ message: 'Insufficient balance', availableBalance: donor[balanceField] });
             }
         } else {
             res.status(404).send('Donor not found');

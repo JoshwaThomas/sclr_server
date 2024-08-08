@@ -35,4 +35,31 @@ router.post('/login', async (req, res) => {
     }
 });
 
+router.get('/staffmang', async (req, res) =>{
+    Staff.find()
+        .then(users => res.json(users))
+        .catch(err => res.json(err));
+})
+
+router.put('/staffmang/:id', async (req, res) => {
+    const { id } = req.params;
+    const { password } = req.body;
+
+    Staff.findByIdAndUpdate(id, { password }, { new: true })
+        .then(user => res.json(user))
+        .catch(err => res.json(err));
+});
+
+router.put('/staffsetting/:staffId', async (req, res) => {
+    const { staffId } = req.params;
+    const { password } = req.body;
+  
+    try {
+      const updatedStaff = await Staff.findOneUpdate(staffId, { password }, { new: true });
+      res.json(updatedStaff);
+    } catch (err) {
+      res.status(500).json({ error: 'Failed to update password' });
+    }
+  });
+
 module.exports = router;

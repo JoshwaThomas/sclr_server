@@ -12,9 +12,12 @@ const DonarDataSchema = new mongoose.Schema({
     district : String,
     state : String,
     pin : Number,
+   
     scholtype : String,
     amount: Number,
+    zakkathamt: Number,
     scholdate: String, 
+    receipt: String,
 })
 
 
