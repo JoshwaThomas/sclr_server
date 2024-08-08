@@ -29,7 +29,8 @@ router.get('/studawardreport', async (req, res) => {
                     },
                     totalScholamt: { $sum: '$scholamt' },
                     name: { $first: '$name' },
-                    dept: { $first: '$dept' }
+                    dept: { $first: '$dept' },
+                    amtdate: {$first: '$amtdate'}
                 }
             },
             {
@@ -39,6 +40,7 @@ router.get('/studawardreport', async (req, res) => {
                     totalScholamt: 1,
                     name: 1,
                     dept: 1,
+                    amtdate: 1,
                     _id: 0
                 }
             }

@@ -1,6 +1,8 @@
 const express = require('express')
 const mongoose = require('mongoose')
 const cors = require('cors')
+// const multer = require("multer");
+// const path = require("path");
 const ApplicantModel = require('./models/fersh')
 const RenewalModel = require('./models/renewal')
 const AmountModel = require('./models/amt')
@@ -32,38 +34,77 @@ app.use('/api/admin', Reject);
 
 mongoose.connect("mongodb://127.0.0.1:27017/sclr")
 
-app.post("/fresh", (req, res) => {
-    const { registerNo } = req.body;
-    // console.log(`Received request for registerNo: ${registerNo}`);
-    ApplicantModel.findOne({ registerNo })
-        .then(existingUsers => {
+// const storage = multer.diskStorage({
+//     destination: function (req, file, cb) {
+//       cb(null, "uploads/"); // Adjust the directory as needed
+//     },
+//     filename: function (req, file, cb) {
+//       cb(null, file.fieldname + "-" + Date.now() + path.extname(file.originalname));
+//     },
+//   });
+  
+//   // Initialize upload variable
+//   const upload = multer({ storage: storage });
 
-            //check the records for one more register
-            if (existingUsers) {
-                return res.json({ success: false, message: 'Register No. Already Existing' })
-            }
-            //new record created
-            ApplicantModel.create(req.body)
-                .then(users => res.json({ success: true, users }))
-                .catch(err => res.json({ success: false, error: err }))
-        })
-        .catch(err => {
-            res.json({ success: false, error: err })
-            console.error('Error fetching student data:', err); // Detailed logging
-            res.status(500).send({ message: 'Internal server error', error: err });
-        })
-})
+//   app.post("/fresh", upload.single("jamath"), (req, res) => {
+//     const { registerNo } = req.body;
+  
+//     ApplicantModel.findOne({ registerNo })
+//       .then((existingUsers) => {
+//         if (existingUsers) {
+//           return res.json({ success: false, message: "Register No. Already Existing" });
+//         }
+  
+//         // Create new applicant record
+//         const newApplicant = new ApplicantModel({
+//           ...req.body,
+//           jamath: req.file.path, // Save the file path in the database
+//         });
+  
+//         newApplicant
+//           .save()
+//           .then((users) => res.json({ success: true, users }))
+//           .catch((err) => res.json({ success: false, error: err }));
+//       })
+//       .catch((err) => {
+//         console.error("Error fetching student data:", err);
+//         res.status(500).send({ message: "Internal server error", error: err });
+//       });
+//   });
 
-// app.post("/fresh", (req, res) => {
+//   app.post("/fresh", (req, res) => {
 //     const { registerNo } = req.body;
 //     console.log(`Received request for registerNo: ${registerNo}`);
+//     ApplicantModel.findOne({ registerNo })
+//         .then(existingUsers => {
+
+//             //check the records for one more register
+//             if (existingUsers) {
+//                 return res.json({ success: false, message: 'Register No. Already Existing' })
+//             }
+//             //new record created
+//             ApplicantModel.create(req.body)
+//                 .then(users => res.json({ success: true, users }))
+//                 .catch(err => res.json({ success: false, error: err }))
+//         })
+//         .catch(err => {
+//             res.json({ success: false, error: err })
+//             console.error('Error fetching student data:', err); // Detailed logging
+//             res.status(500).send({ message: 'Internal server error', error: err });
+//         })
+// })
+
+// app.post("/fresh", (req, res) => {
+//     const { registerNo, password } = req.body;
+//     console.log(`Received request for registerNo: ${registerNo}`);
+//     console.log(`Received request for password: ${password}`);
 
 //     ApplicantModel.findOne({ registerNo })
 //       .then(existingUsers => {
 //         if (existingUsers) {
 //           return res.json({ success: false, message: 'Register No. Already Existing' });
 //         }
-//         ApplicantModel.create(req.body)
+//         ApplicantModel.create(req.body) 
 //           .then(users => res.json({ success: true, users }))
 //           .catch(err => {
 //             console.error('Error creating user:', err);
@@ -75,6 +116,30 @@ app.post("/fresh", (req, res) => {
 //         res.status(500).json({ success: false, message: 'Internal server error', error: err });
 //       });
 //   });
+
+app.post("/fresh", (req, res) => {
+    const { registerNo } = req.body;
+    console.log(`Received request for registerNo: ${registerNo}`);
+    // console.log(`Received request for password: ${password}`);
+    // delete rest.password;
+  
+    ApplicantModel.findOne({ registerNo })
+      .then(existingUsers => {
+        if (existingUsers) {
+          return res.json({ success: false, message: 'Register No. Already Existing' });
+        }
+        ApplicantModel.create(req.body)
+          .then(users => res.json({ success: true, users }))
+          .catch(err => {
+            console.error('Error creating user:', err);
+            res.json({ success: false, message: 'Error creating user', error: err });
+          });
+      })
+      .catch(err => {
+        console.error('Error fetching student data:', err);
+        res.status(500).json({ success: false, message: 'Internal server error', error: err });
+      });
+  });
 
 app.post("freshaction/:registerNo", (req, res) => {
     const { registerNo } = req.body;
