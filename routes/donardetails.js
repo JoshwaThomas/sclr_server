@@ -407,10 +407,35 @@ router.get("/donoracyear-report", (req,res) => {
     .catch(err => res.json(err));
 })
 
+// router.get('/last-donor-id', async (req, res) => {
+//     try {
+//         const lastDonor = await DonarModel.findOne().sort({ did: -1 }).exec();
+//         const lastDid = lastDonor ? parseInt(lastDonor.did, 10) : 0;
+//         console.log('lastDonor :', lastDonor)
+//         console.log('lastDid :', lastDid)
+//         res.json({ lastDid });
+//     } catch (error) {
+//         res.status(500).json({ error: 'Error fetching last donor ID' });
+//     }
+// });
+
 router.get('/last-donor-id', async (req, res) => {
     try {
-        const lastDonor = await DonarModel.findOne().sort({ did: -1 }).exec();
-        const lastDid = lastDonor ? parseInt(lastDonor.did, 10) : 0;
+        const lastDonor = await DonarModel.aggregate([
+            {
+                $addFields: {
+                    didAsInt: { $toInt: "$did" }
+                }
+            },
+            { $sort: { didAsInt: -1 } },
+            { $limit: 1 }
+        ]).exec();
+
+        const lastDid = lastDonor.length > 0 ? lastDonor[0].didAsInt : 0;
+
+        console.log('lastDonor :', lastDonor[0]);
+        console.log('lastDid :', lastDid);
+
         res.json({ lastDid });
     } catch (error) {
         res.status(500).json({ error: 'Error fetching last donor ID' });

@@ -104,32 +104,25 @@ router.get('/studstatus', async (req, res) => {
         }
 
         if (applicant) {
-            // console.log("Applicant's Mobile No:", applicant.mobileNo);
-            // console.log("Provided Mobile No:", mobileNo);
-
-
+           
             if (String(applicant.mobileNo).trim() === String(mobileNo).trim()) {
                 // console.log('RegisterNo & mobileNo are matched');
-
-                const amountData = await AmountModel.find({ registerNo });
-
-                if (amountData && amountData.length > 0) {
-                    const totalScholamt = amountData.reduce((sum, entry) => sum + entry.scholamt, 0);
-                    console.log(totalScholamt);
-                    return res.json({ ...amountData[0]._doc, totalScholamt, success: true, message: `Applications are Selected : ${totalScholamt}` });
-                }
-
+                console.log(applicant)
+           
                 let data = await RejectModel.findOne({ registerNo });
                 if (data) {
-                    return res.json({ ...data._doc, success: true, message: `Your Application is Rejected : ${data.reason}` });
+                    return res.json(data);
                 }
 
                 data = await RenewalModel.findOne({ registerNo });
                 if (data) {
-                    return res.json({ ...data._doc, message: 'Your Application is Processed' });
+                    return res.json(data);
                 }
-
-                return res.json({ ...applicant._doc, success: true, message: 'Your Application is Processed' });
+                data = await ApplicantModel.findOne({ registerNo });
+                if (data) {
+                    return res.json(data);
+                }
+               
             } else {
                 return res.json({ success: false, message: 'Reg. No & Mobile No Mismatched' });
             }
