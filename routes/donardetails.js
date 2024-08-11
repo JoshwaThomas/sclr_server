@@ -247,9 +247,12 @@ router.put('/donar/:id', async (req, res) => {
 
 // Amount save routes
 router.post('/freshamt', async (req, res) => {
+    const registerNo = req.body
+    console.log({registerNo})
     try {
         const donor = await DonarModel.findById(req.body.scholdonar);
-        if (donor && donor.balance >= req.body.scholamt) {
+        if (donor && donor.balance || donor.zakkathbal >= req.body.scholamt) {
+            console.log(donor)
             await AmountModel.create(req.body);
             res.status(201).send('Amount data saved successfully');
         } 
