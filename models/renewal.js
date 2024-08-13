@@ -56,15 +56,16 @@ const RenewalSchema = new mongoose.Schema({
         type: String,
         default: 'Good'
     },
-    siblings : Number,
-    siblingsNo : Number,
+    siblings : String,
+    siblingsNo : { type: Number, default: 0 },
     siblingsOccupation : String,
-    siblingsIncome : Number,
+    siblingsIncome : { type: Number, default: 0 },
     arrear : {
         type: Number,
         default: 0
     },
     lastCreditedAmt : Number,
+    jamath: String,
     action: {
         type: Number,
         default: 0

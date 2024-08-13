@@ -89,34 +89,41 @@ app.post("/fresh", upload.single("jamath"), (req, res) => {
         });
 });
 
-// app.post("/renewal", upload.single("jamath"), (req, res) => {
-//     console.log("Received file:", req.file); // Should show file information
-//     console.log("Received body:", req.body);
+app.post("/renewal", upload.single("jamath"), (req, res) => {
+    console.log("Received file:", req.file); // Should show file information
+    console.log("Received body:", req.body);
 
-//     const { registerNo } = req.body;
-//     //check the records for one more register
-//     const applicantData = {
-//         ...req.body,
-//         yearOfPassing,
-//         siblingsNo,
-//         siblingsIncome,
-//         jamath: req.file ? req.file.path : null // Add file path to data
-//     };
+    const { registerNo } = req.body;
+    const siblingsNo = req.body.siblingsNo && !isNaN(req.body.siblingsNo) ? Number(req.body.siblingsNo) : null;
+    const siblingsIncome = req.body.siblingsIncome && !isNaN(req.body.siblingsIncome) ? Number(req.body.siblingsIncome) : null;
 
-//     RenewalModel.findOne({ registerNo })
-//         .then(existingUsers => {
-//             if (existingUsers) {
-//                 return res.json({ success: false, message: 'Register No. Already Existing' })
-//             }
-//             //create a new record
-//             RenewalModel.create(applicantData)
-//                 .then(users => res.json({ success: true, users }))
-//                 .catch(err => res.json({ success: false, error: err }));
-//         })
-//         .catch(err => res.json({ success: false, error: err }));
-// })
 
-//worked
+    //check the records for one more register
+    const applicantData = {
+        ...req.body,
+        siblingsNo,
+        siblingsIncome,
+        jamath: req.file ? req.file.path : null // Add file path to data
+    };
+
+    RenewalModel.findOne({ registerNo })
+        .then(existingUsers => {
+            if (existingUsers) {
+                return res.json({ success: false, message: 'Register No. Already Existing' })
+            }
+            //create a new record
+            RenewalModel.create(applicantData)
+                // console.log("Applicant:", applicantData)
+                .then(users => res.json({ success: true, users }))
+                .catch(err => {
+                    console.error('Error creating renewal record:', err);
+                    res.status(500).json({ success: false, message: 'Failed to create record', error: err.message });
+                });
+        })
+        .catch(err => res.json({ success: false, error: err }));
+})
+
+// worked
 // app.post("/fresh", (req, res) => {
 //     const { registerNo } = req.body;
 //     console.log(`Received request for registerNo: ${registerNo}`);
@@ -142,22 +149,22 @@ app.post("/fresh", upload.single("jamath"), (req, res) => {
 //   });
 
 // Worked Renewal
-app.post("/renewal", (req, res) => {
-    const { registerNo } = req.body;
-    //check the records for one more register
-    RenewalModel.findOne({ registerNo })
-        .then(existingUsers => {
-            if (existingUsers) {
-                return res.json({ success: false, message: 'Register No. Already Existing' })
-            }
-            //create a new record
-            RenewalModel.create(req.body)
-                .then(users => res.json({ success: true, users }))
-                .catch(err => res.json({ success: false, error: err }));
-        })
-        .catch(err => res.json({ success: false, error: err }));
+// app.post("/renewal", (req, res) => {
+//     const { registerNo } = req.body;
+//     //check the records for one more register
+//     RenewalModel.findOne({ registerNo })
+//         .then(existingUsers => {
+//             if (existingUsers) {
+//                 return res.json({ success: false, message: 'Register No. Already Existing' })
+//             }
+//             //create a new record
+//             RenewalModel.create(req.body)
+//                 .then(users => res.json({ success: true, users }))
+//                 .catch(err => res.json({ success: false, error: err }));
+//         })
+//         .catch(err => res.json({ success: false, error: err }));
 
-})
+// })
 
 app.post("freshaction/:registerNo", (req, res) => {
     const { registerNo } = req.body;
@@ -180,13 +187,24 @@ app.post("/api/admin/actionreject", (req, res) => {
 })
 
 
-
+app.use('/zamathfiles', express.static('zamathfiles'));
 
 app.get("/fresh", (req, res) => {
     ApplicantModel.find()
-        .then(users => res.json(users))
+        .then(users => {
+            const usersWithFileURL = users.map(user => ({
+                ...user._doc,
+                jamath: user.jamath ? `${req.protocol}://${req.get('host')}/${user.jamath.replace(/\\/g, '/')}` : null
+            }));
+            res.json(usersWithFileURL);
+        })
         .catch(err => res.json(err));
-})
+});
+// app.get("/fresh", (req, res) => {
+//     ApplicantModel.find()
+//         .then(users => res.json(users))
+//         .catch(err => res.json(err));
+// })
 
 //get the student details for using renewal form and check the amount table bcz once fresher recive the amt then apply renewal
 app.get('/api/admin/students', async (req, res) => {
@@ -335,7 +353,13 @@ app.put("/freshsemUpdate", async (req, res) => {
 
 app.get("/renewal", (req, res) => {
     RenewalModel.find()
-        .then(rusers => res.json(rusers))
+        .then(users => {
+            const usersWithFileURL = users.map(user => ({
+                ...user._doc,
+                jamath: user.jamath ? `${req.protocol}://${req.get('host')}/${user.jamath.replace(/\\/g, '/')}` : null
+            }));
+            res.json(usersWithFileURL);
+        })
         .catch(err => res.json(err));
 })
 app.get('/in-progress', async (req, res) => {
