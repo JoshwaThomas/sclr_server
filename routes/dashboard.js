@@ -29,7 +29,7 @@ router.get('/counts', async (req, res) => {
         const dwCount = await ApplicantModel.countDocuments({acyear, procategory: 'SFW', deeniyath: 'Yes', deeniyathPer: 0})
         const damTotal = await ApplicantModel.countDocuments({acyear, procategory: 'Aided', deeniyath: 'Yes'})
         const dsmTotal = await ApplicantModel.countDocuments({acyear, procategory: 'SFM', deeniyath: 'Yes'})
-        const dwToatal = await ApplicantModel.countDocuments({acyear, procategory: 'SFW', deeniyath: 'Yes'})
+        const dwTotal = await ApplicantModel.countDocuments({acyear, procategory: 'SFW', deeniyath: 'Yes'})
 
 
         const fSem = await ApplicantModel.countDocuments({acyear,  ugOrPg: 'UG', semester: 'I' });
@@ -75,19 +75,27 @@ router.get('/counts', async (req, res) => {
             thirdYear: (fivSem + sixSem),
             pgfirstYear: (pfSem + psSem),
             pgsecYear: (ptSem + pfourSem),
-<<<<<<< HEAD
             aaCount,
             amCount,
             selfmCount,
+            sfmCount,
             selfwCount,
+            sfwCount,
+            damCount,
+            damTotal,
+            dsmCount,
+            dsmTotal,
+            dwCount,
+            dwTotal,
             aaComplete:(amCount - aaCount),
             selfmComplete:(sfmCount - selfmCount),
             selfwComplete:(sfwCount - selfwCount),
-=======
-            dm: (dsmCount + damCount),
-            dwCount,
-            dmCom: (damTotal + dsmTotal) - dm,
->>>>>>> b244ba093521fb9de58414d9c38c5f98d6422beb
+            aCompleted:(damTotal - damCount),
+            sCompleted:(dsmTotal - dsmCount),
+            wCompleted:(dwTotal - dwCount),
+            
+            
+
 
 
         });
