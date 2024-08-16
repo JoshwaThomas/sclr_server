@@ -42,6 +42,13 @@ router.get('/counts', async (req, res) => {
         const scholamt = scholamtdoc.map(doc => doc.scholamt);
         const donaramt = donaramtdoc.map(doc => doc.amount);
 
+        const aaCount = await ApplicantModel.countDocuments({ acyear, procategory: 'Aided',
+            classAttendancePer:0 });
+        const selfmCount = await ApplicantModel.countDocuments({acyear, procategory: 'SFM',
+            classAttendancePer:0});
+        const selfwCount = await ApplicantModel.countDocuments({acyear, procategory: 'SFW',
+            classAttendancePer:0 });
+
         res.json({
             totalApplicants,
             totalDonars,
@@ -60,6 +67,14 @@ router.get('/counts', async (req, res) => {
             thirdYear: (fivSem + sixSem),
             pgfirstYear: (pfSem + psSem),
             pgsecYear: (ptSem + pfourSem),
+            aaCount,
+            amCount,
+            selfmCount,
+            selfwCount,
+            aaComplete:(amCount - aaCount),
+            selfmComplete:(sfmCount - selfmCount),
+            selfwComplete:(sfwCount - selfwCount),
+
 
         });
     } catch (error) {
