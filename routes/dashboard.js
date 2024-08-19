@@ -24,11 +24,11 @@ router.get('/counts', async (req, res) => {
         const sfmCount = await ApplicantModel.countDocuments({acyear, procategory: 'SFM' });
         const sfwCount = await ApplicantModel.countDocuments({acyear, procategory: 'SFW' });
 
-        const damCount = await ApplicantModel.countDocuments({acyear, procategory: 'Aided', deeniyath: 'Yes', deeniyathPer: 0})
-        const dsmCount = await ApplicantModel.countDocuments({acyear, procategory: 'SFM', deeniyath: 'Yes', deeniyathPer: 0})
+        const damCount = await ApplicantModel.countDocuments({acyear, procategory:  { $in: ['Aided', 'SFM']}, deeniyath: 'Yes', deeniyathPer: 0})
+        // const dsmCount = await ApplicantModel.countDocuments({acyear, procategory: 'SFM', deeniyath: 'Yes', deeniyathPer: 0})
         const dwCount = await ApplicantModel.countDocuments({acyear, procategory: 'SFW', deeniyath: 'Yes', deeniyathPer: 0})
-        const damTotal = await ApplicantModel.countDocuments({acyear, procategory: 'Aided', deeniyath: 'Yes'})
-        const dsmTotal = await ApplicantModel.countDocuments({acyear, procategory: 'SFM', deeniyath: 'Yes'})
+        const damTotal = await ApplicantModel.countDocuments({acyear, procategory:  { $in: ['Aided', 'SFM']}, deeniyath: 'Yes'})
+        // const dsmTotal = await ApplicantModel.countDocuments({acyear, procategory: 'SFM', deeniyath: 'Yes'})
         const dwTotal = await ApplicantModel.countDocuments({acyear, procategory: 'SFW', deeniyath: 'Yes'})
 
 
@@ -83,15 +83,12 @@ router.get('/counts', async (req, res) => {
             sfwCount,
             damCount,
             damTotal,
-            dsmCount,
-            dsmTotal,
             dwCount,
             dwTotal,
             aaComplete:(amCount - aaCount),
             selfmComplete:(sfmCount - selfmCount),
             selfwComplete:(sfwCount - selfwCount),
             aCompleted:(damTotal - damCount),
-            sCompleted:(dsmTotal - dsmCount),
             wCompleted:(dwTotal - dwCount),
             
             
