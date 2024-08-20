@@ -25,11 +25,20 @@ router.get('/counts', async (req, res) => {
         const sfwCount = await ApplicantModel.countDocuments({acyear, procategory: 'SFW' });
 
         const damCount = await ApplicantModel.countDocuments({acyear, procategory:  { $in: ['Aided', 'SFM']}, deeniyath: 'Yes', deeniyathPer: 0})
+        const mamCount = await ApplicantModel.countDocuments({acyear, procategory:  { $in: ['Aided', 'SFM']}, deeniyath: 'No', deeniyathPer: 0})
+
         // const dsmCount = await ApplicantModel.countDocuments({acyear, procategory: 'SFM', deeniyath: 'Yes', deeniyathPer: 0})
         const dwCount = await ApplicantModel.countDocuments({acyear, procategory: 'SFW', deeniyath: 'Yes', deeniyathPer: 0})
+        const mwCount = await ApplicantModel.countDocuments({acyear, procategory: 'SFW', deeniyath: 'No', deeniyathPer: 0})
+
         const damTotal = await ApplicantModel.countDocuments({acyear, procategory:  { $in: ['Aided', 'SFM']}, deeniyath: 'Yes'})
+        const mamTotal = await ApplicantModel.countDocuments({acyear, procategory:  { $in: ['Aided', 'SFM']}, deeniyath: 'No'})
         // const dsmTotal = await ApplicantModel.countDocuments({acyear, procategory: 'SFM', deeniyath: 'Yes'})
         const dwTotal = await ApplicantModel.countDocuments({acyear, procategory: 'SFW', deeniyath: 'Yes'})
+        const mwTotal = await ApplicantModel.countDocuments({acyear, procategory: 'SFW', deeniyath: 'No'})
+
+        const semCount = await ApplicantModel.countDocuments({acyear, semPercentage: 0})
+
 
 
         const fSem = await ApplicantModel.countDocuments({acyear,  ugOrPg: 'UG', semester: 'I' });
@@ -90,8 +99,15 @@ router.get('/counts', async (req, res) => {
             selfwComplete:(sfwCount - selfwCount),
             aCompleted:(damTotal - damCount),
             wCompleted:(dwTotal - dwCount),
-            
-            
+            mamCount,
+            mamTotal,
+            mwCount,
+            mwTotal,
+            maCompleted:(mamTotal - mamCount),
+            mwCompleted:(mwTotal - mwCount),
+            semCount,
+            semComplete: (totalApplicants-semCount),
+
 
 
 
