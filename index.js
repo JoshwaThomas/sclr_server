@@ -13,6 +13,7 @@ const Donardetails = require('./routes/donardetails')
 const Login = require('./routes/login')
 const Amount = require('./routes/fershamt')
 const Reject = require('./routes/rejectdata')
+const DateMang = require('./routes/datemang')
 
 
 const app = express()
@@ -30,6 +31,7 @@ app.use('/api/admin', Donardetails);
 app.use('/api/admin', Login);
 app.use('/api/admin', Amount);
 app.use('/api/admin', Reject);
+app.use('/api/admin', DateMang);
 
 
 mongoose.connect("mongodb://127.0.0.1:27017/sclr")
@@ -247,25 +249,27 @@ app.get('/api/admin/students', async (req, res) => {
 
 app.put("/freshattSfmUpdate", async (req, res) => {
     const { updates, remarks } = req.body;
-
+    
     try {
-        const updatePromises = Object.entries(updates).map(async ([registerNo, classAttendancePer]) => {
+        const updatePromises = Object.entries(updates).map(async ([registerNo, attendanceData]) => {
+            const { prevAttendance, classAttendancePer } = attendanceData;
             const remark = remarks[registerNo];
 
             // Check if the registerNo exists in RenewalModel
+        
             const renewalUser = await RenewalModel.findOne({ registerNo });
             if (renewalUser) {
                 // Update RenewalModel only
                 return RenewalModel.findOneAndUpdate(
                     { registerNo },
-                    { classAttendancePer, classAttendanceRem: remark },
+                    { prevAttendance, classAttendancePer, classAttendanceRem: remark },
                     { new: true }
                 );
             } else {
                 // If not in RenewalModel, update ApplicantModel
                 return ApplicantModel.findOneAndUpdate(
                     { registerNo },
-                    { classAttendancePer, classAttendanceRem: remark },
+                    { prevAttendance, classAttendancePer, classAttendanceRem: remark },
                     { new: true }
                 );
             }
@@ -273,7 +277,7 @@ app.put("/freshattSfmUpdate", async (req, res) => {
 
         await Promise.all(updatePromises);
 
-        res.json({ success: true });
+        res.json({ success: true }); 
     } catch (err) {
         console.error('Error updating attendance:', err);
         res.status(500).json({ success: false, error: err.message });
@@ -352,6 +356,7 @@ app.put("/freshsemUpdate", async (req, res) => {
 });
 
 app.get("/renewal", (req, res) => {
+    
     RenewalModel.find()
         .then(users => {
             const usersWithFileURL = users.map(user => ({

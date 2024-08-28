@@ -40,6 +40,10 @@ const RenewalSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
+    prevAttendance:{
+        type: Number,
+        default: 0
+    },
     classAttendancePer :{
         type: Number,
         default: 0

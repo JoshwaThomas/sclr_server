@@ -8,6 +8,7 @@ const ApplicantSchema = new mongoose.Schema({
         type: String,
         default : 'Fresher'
     },
+    scholarship: String,
     ugOrPg : String,
     semester : String,
     name : String,
@@ -39,6 +40,10 @@ const ApplicantSchema = new mongoose.Schema({
         default: 0
     },
     deeniyathPer : {
+        type: Number,
+        default: 0
+    },
+    prevAttendance:{
         type: Number,
         default: 0
     },

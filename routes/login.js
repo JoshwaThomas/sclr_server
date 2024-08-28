@@ -12,6 +12,7 @@ router.post('/login', async (req, res) => {
 
         if (staff) {
             if (staff.password === password) {
+                console.log(staff.name)
                 res.json({ status: "exist", role: staff.role });
             } else {
                 res.json({ status: "wrong password" });
