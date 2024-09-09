@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express')
 const mongoose = require('mongoose')
 const cors = require('cors')
@@ -14,11 +15,12 @@ const Login = require('./routes/login')
 const Amount = require('./routes/fershamt')
 const Reject = require('./routes/rejectdata')
 const DateMang = require('./routes/datemang')
+const AcademicModel = require('./models/academic')
 
 
 const app = express()
 app.use(cors({
-    origin: "http://localhost:3000",
+    origin: process.env.FRONTEND_URL,
     methods: ["GET", "POST", "PATCH", "DELETE", "PUT"],
 }))
 
@@ -34,7 +36,11 @@ app.use('/api/admin', Reject);
 app.use('/api/admin', DateMang);
 
 
-mongoose.connect("mongodb://127.0.0.1:27017/sclr")
+mongoose.connect(process.env.MONGO_URI).then(() => {
+    console.log('Connected to MongoDB');
+}).catch((err) => {
+    console.error('Failed to connect to MongoDB', err);
+});
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -91,7 +97,7 @@ app.post("/fresh", upload.single("jamath"), (req, res) => {
         });
 });
 
-app.post("/renewal", upload.single("jamath"), (req, res) => {
+app.post("/renewal", upload.single("jamath"), async (req, res) => {
     console.log("Received file:", req.file); // Should show file information
     console.log("Received body:", req.body);
 
@@ -99,8 +105,7 @@ app.post("/renewal", upload.single("jamath"), (req, res) => {
     const siblingsNo = req.body.siblingsNo && !isNaN(req.body.siblingsNo) ? Number(req.body.siblingsNo) : null;
     const siblingsIncome = req.body.siblingsIncome && !isNaN(req.body.siblingsIncome) ? Number(req.body.siblingsIncome) : null;
 
-
-    //check the records for one more register
+    // Check the records for one more register
     const applicantData = {
         ...req.body,
         siblingsNo,
@@ -108,22 +113,40 @@ app.post("/renewal", upload.single("jamath"), (req, res) => {
         jamath: req.file ? req.file.path : null // Add file path to data
     };
 
-    RenewalModel.findOne({ registerNo })
-        .then(existingUsers => {
-            if (existingUsers) {
-                return res.json({ success: false, message: 'Register No. Already Existing' })
-            }
-            //create a new record
-            RenewalModel.create(applicantData)
-                // console.log("Applicant:", applicantData)
-                .then(users => res.json({ success: true, users }))
-                .catch(err => {
-                    console.error('Error creating renewal record:', err);
-                    res.status(500).json({ success: false, message: 'Failed to create record', error: err.message });
-                });
-        })
-        .catch(err => res.json({ success: false, error: err }));
-})
+    try {
+        const academic = await AcademicModel.findOne({ active: 1 });
+        const student = await ApplicantModel.findOne({ registerNo });
+
+        if (student && student.acyear === academic.acyear) {
+            console.log('Fresher application:', student.acyear);
+            console.log('Academic year:', academic.acyear);
+            console.log('RegisterNo:', registerNo);
+            return res.json({ success: false, message: 'Already You Applied Fresher Application' });
+        }
+
+        console.log('RegisterNo:', registerNo);
+        RenewalModel.findOne({ registerNo })
+            .then(existingUser => {
+                if (existingUser) {
+                    return res.json({ success: false, message: 'Register No. Already Existing' });
+                }
+          
+                RenewalModel.create(applicantData)
+                    .then(user => res.json({ success: true, user }))
+                    .catch(err => {
+                        console.error('Error creating renewal record:', err);
+                        res.status(500).json({ success: false, message: 'Failed to create record', error: err.message });
+                    });
+            })
+            .catch(err => {
+                console.error('Error checking existing record:', err);
+                res.status(500).json({ success: false, error: err.message });
+            });
+    } catch (err) {
+        console.error('Error fetching student data:', err);
+        res.status(500).send({ message: 'Internal server error', error: err.message });
+    }
+});
 
 // worked
 // app.post("/fresh", (req, res) => {
@@ -210,8 +233,8 @@ app.get("/fresh", (req, res) => {
 
 //get the student details for using renewal form and check the amount table bcz once fresher recive the amt then apply renewal
 app.get('/api/admin/students', async (req, res) => {
-    const { registerNo, mobileNo } = req.query;
-    console.log(`Received request for registerNo: ${registerNo}, mobileNo: ${mobileNo}`);
+    const { registerNo } = req.query;
+    console.log(`Received request for registerNo: ${registerNo},`);
 
     // try {
     //     const student = await ApplicantModel.findOne({ registerNo: registerNo, mobileNo: mobileNo });
@@ -221,16 +244,16 @@ app.get('/api/admin/students', async (req, res) => {
     //         res.json(response);
     //     } else {
     //         console.log('Student or amount not found');
-    //         res.status(404).send('Student with the specified Register No and Mobile No not found');
+    //         res.status(404).send('Student with the specified Register No an d Mobile No not found');
     //     }
     // }
     try {
         // Find the student by registerNo and mobileNo
-        const student = await ApplicantModel.findOne({ registerNo: registerNo, mobileNo: mobileNo });
+        const student = await ApplicantModel.findOne({ registerNo: registerNo});
 
         if (!student) {
             console.log('Student not found');
-            return res.status(404).send('Student with the specified Register No and Mobile No not found');
+            return res.status(404).send('Student with the specified Register No and not found');
         }
 
         // Find all matching entries in AmountModel for the given registerNo and sum the scholamt
@@ -249,14 +272,14 @@ app.get('/api/admin/students', async (req, res) => {
 
 app.put("/freshattSfmUpdate", async (req, res) => {
     const { updates, remarks } = req.body;
-    
+
     try {
         const updatePromises = Object.entries(updates).map(async ([registerNo, attendanceData]) => {
             const { prevAttendance, classAttendancePer } = attendanceData;
             const remark = remarks[registerNo];
 
             // Check if the registerNo exists in RenewalModel
-        
+
             const renewalUser = await RenewalModel.findOne({ registerNo });
             if (renewalUser) {
                 // Update RenewalModel only
@@ -277,7 +300,7 @@ app.put("/freshattSfmUpdate", async (req, res) => {
 
         await Promise.all(updatePromises);
 
-        res.json({ success: true }); 
+        res.json({ success: true });
     } catch (err) {
         console.error('Error updating attendance:', err);
         res.status(500).json({ success: false, error: err.message });
@@ -356,7 +379,7 @@ app.put("/freshsemUpdate", async (req, res) => {
 });
 
 app.get("/renewal", (req, res) => {
-    
+
     RenewalModel.find()
         .then(users => {
             const usersWithFileURL = users.map(user => ({
@@ -420,6 +443,8 @@ app.post('/api/admin/student/update', async (req, res) => {
 });
 
 
-app.listen(3001, () => {
-    console.log("Server is Running")
-})
+const PORT = process.env.PORT || 3001;
+
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+});

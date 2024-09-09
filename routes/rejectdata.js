@@ -95,7 +95,7 @@ router.get('/status/:registerNo', async (req, res) => {
 
 router.get('/studstatus', async (req, res) => {
     try {
-        const { registerNo, mobileNo } = req.query;
+        const { registerNo } = req.query;
 
         let applicant = await RenewalModel.findOne({ registerNo });
 
@@ -104,9 +104,6 @@ router.get('/studstatus', async (req, res) => {
         }
 
         if (applicant) {
-           
-            if (String(applicant.mobileNo).trim() === String(mobileNo).trim()) {
-                // console.log('RegisterNo & mobileNo are matched');
                 console.log(applicant)
            
                 let data = await RejectModel.findOne({ registerNo });
@@ -122,10 +119,6 @@ router.get('/studstatus', async (req, res) => {
                 if (data) {
                     return res.json(data);
                 }
-               
-            } else {
-                return res.json({ success: false, message: 'Reg. No & Mobile No Mismatched' });
-            }
         } else {
             return res.json({ success: false, message: 'Applicant does not exist' });
         }
