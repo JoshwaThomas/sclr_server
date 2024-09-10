@@ -116,12 +116,20 @@ app.post("/renewal", upload.single("jamath"), async (req, res) => {
     try {
         const academic = await AcademicModel.findOne({ active: 1 });
         const student = await ApplicantModel.findOne({ registerNo });
+        const student1 = await RenewalModel.findOne({ registerNo });
 
         if (student && student.acyear === academic.acyear) {
             console.log('Fresher application:', student.acyear);
             console.log('Academic year:', academic.acyear);
             console.log('RegisterNo:', registerNo);
             return res.json({ success: false, message: 'Already You Applied Fresher Application' });
+        }
+
+        if (student1 && student1.acyear === academic.acyear) {
+            console.log('Renewal application:', student.acyear);
+            console.log('Academic year:', academic.acyear);
+            console.log('RegisterNo:', registerNo);
+            return res.json({ success: false, message: 'Already You Applied Renewal Application' });
         }
 
         console.log('RegisterNo:', registerNo);
