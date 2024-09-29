@@ -16,6 +16,7 @@ const Amount = require('./routes/fershamt')
 const Reject = require('./routes/rejectdata')
 const DateMang = require('./routes/datemang')
 const AcademicModel = require('./models/academic')
+// const bcrypt = require('bcryptjs');
 
 
 const app = express()
@@ -34,6 +35,7 @@ app.use('/api/admin', Login);
 app.use('/api/admin', Amount);
 app.use('/api/admin', Reject);
 app.use('/api/admin', DateMang);
+
 
 
 mongoose.connect(process.env.MONGO_URI).then(() => {
@@ -116,7 +118,7 @@ app.post("/renewal", upload.single("jamath"), async (req, res) => {
     try {
         const academic = await AcademicModel.findOne({ active: 1 });
         const student = await ApplicantModel.findOne({ registerNo });
-        const student1 = await RenewalModel.findOne({ registerNo });
+        const student1 = await RenewalModel.findOne({ registerNo, acyear:academic.acyear });
 
         if (student && student.acyear === academic.acyear) {
             console.log('Fresher application:', student.acyear);
@@ -130,26 +132,25 @@ app.post("/renewal", upload.single("jamath"), async (req, res) => {
             console.log('Academic year:', academic.acyear);
             console.log('RegisterNo:', registerNo);
             return res.json({ success: false, message: 'Already You Applied Renewal Application' });
+        } else {
+
+            console.log('RegisterNo:', registerNo);
+            RenewalModel.findOne({ registerNo })
+                .then(existingUser => {
+
+                    RenewalModel.create(applicantData)
+                        .then(user => res.json({ success: true, user }))
+                        .catch(err => {
+                            console.error('Error creating renewal record:', err);
+                            res.status(500).json({ success: false, message: 'Failed to create record', error: err.message });
+                        });
+                })
+                .catch(err => {
+                    console.error('Error checking existing record:', err);
+                    res.status(500).json({ success: false, error: err.message });
+                });
         }
 
-        console.log('RegisterNo:', registerNo);
-        RenewalModel.findOne({ registerNo })
-            .then(existingUser => {
-                if (existingUser) {
-                    return res.json({ success: false, message: 'Register No. Already Existing' });
-                }
-          
-                RenewalModel.create(applicantData)
-                    .then(user => res.json({ success: true, user }))
-                    .catch(err => {
-                        console.error('Error creating renewal record:', err);
-                        res.status(500).json({ success: false, message: 'Failed to create record', error: err.message });
-                    });
-            })
-            .catch(err => {
-                console.error('Error checking existing record:', err);
-                res.status(500).json({ success: false, error: err.message });
-            });
     } catch (err) {
         console.error('Error fetching student data:', err);
         res.status(500).send({ message: 'Internal server error', error: err.message });
@@ -199,6 +200,41 @@ app.post("/renewal", upload.single("jamath"), async (req, res) => {
 
 // })
 
+app.post("/api/forgotpass", async (req, res) => {
+    const { registerNo, mobileNo, aadhar, password } = req.body;
+    console.log('front: ', registerNo, mobileNo, aadhar, password)
+    try {
+        const register = await ApplicantModel.findOne({ registerNo });
+
+        if (register) {
+            console.log(register)
+            console.log("request mobileNo", mobileNo)
+            console.log("DB mobileNo", register.mobileNo)
+            if (mobileNo == register.mobileNo) {
+                console.log("mobile Number matched", register.mobileNo)
+                console.log("request Aadhar", aadhar)
+                if (aadhar == register.aadhar) {
+                    console.log("Aadhar Number matched", register.aadhar)
+                    // const hashedPassword = bcrypt.hashSync(password, 10);
+                    await ApplicantModel.findOneAndUpdate(
+                        { registerNo },
+                        { password: password }
+                    );
+                    res.status(200).json({ success: true, message: "Password updated successfully!" });
+                } else {
+                    res.status(200).json({ message: 'Aadhar number mismatched' });
+                }
+            } else {
+                res.status(200).json({ message: 'Mobile number mismatched' });
+            }
+        } else {
+            res.status(200).json({ message: 'Register number not found' });
+        }
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
 app.post("freshaction/:registerNo", (req, res) => {
     const { registerNo } = req.body;
     ApplicantModel.findOneAndUpdate({ registerNo }, req.body, { new: true })
@@ -206,17 +242,62 @@ app.post("freshaction/:registerNo", (req, res) => {
         .catch(err => res.json({ success: false, error: err }));
 
 })
-app.post("/api/admin/action", (req, res) => {
+app.post("/api/admin/action", async (req, res) => {
     const { registerNo } = req.body;
-    ApplicantModel.findOneAndUpdate({ registerNo }, { action: '1' })
-        .then(result => res.json({ success: true, result }))
-        .catch(err => res.json({ success: false, error: err }));
+
+    try {
+        const acyearData = await AcademicModel.findOne({active:'1'})
+        const curAcyear = acyearData.acyear;
+        console.log(curAcyear)
+        const register = await RenewalModel.findOne({ registerNo, acyear:curAcyear});
+        console.log(register)
+        if (!register) {
+            const result = await ApplicantModel.findOneAndUpdate(
+                { registerNo },
+                { action: '1' },
+                { new: true }
+            );
+            return res.json({ success: true, result });
+        } else {
+            const result = await RenewalModel.findOneAndUpdate(
+                { registerNo, acyear: curAcyear },
+                { action: '1' },
+                { new: true }
+            );
+            console.log('Updated Renewal Record:', result);
+            return res.json({ success: true, result });
+        }
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
 })
-app.post("/api/admin/actionreject", (req, res) => {
+app.post("/api/admin/actionreject", async (req, res) => {
     const { registerNo } = req.body;
-    ApplicantModel.findOneAndUpdate({ registerNo }, { action: '2' })
-        .then(result => res.json({ success: true, result }))
-        .catch(err => res.json({ success: false, error: err }));
+    try {
+        const acyearData = await AcademicModel.findOne({active:'1'})
+        const curAcyear = acyearData.acyear;
+        console.log(curAcyear)
+        const register = await RenewalModel.findOne({ registerNo, acyear:curAcyear});
+
+        if (!register) {
+            const result = await ApplicantModel.findOneAndUpdate(
+                { registerNo },
+                { action: '2' },
+                { new: true }
+            );
+            return res.json({ success: true, result });
+        } else {
+            const result = await RenewalModel.findOneAndUpdate(
+                { registerNo, acyear: curAcyear },
+                { action: '1' },
+                { new: true }
+            );
+            console.log('Updated Renewal Record:', result);
+            return res.json({ success: true, result });
+        }
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
 })
 
 
@@ -243,29 +324,26 @@ app.get("/fresh", (req, res) => {
 app.get('/api/admin/students', async (req, res) => {
     const { registerNo } = req.query;
     console.log(`Received request for registerNo: ${registerNo},`);
-
-    // try {
-    //     const student = await ApplicantModel.findOne({ registerNo: registerNo, mobileNo: mobileNo });
-    //     const amount = await AmountModel.findOne({ registerNo });
-    //     if (student && amount) {
-    //         const response = { ...student.toObject(), scholamt: amount.scholamt };
-    //         res.json(response);
-    //     } else {
-    //         console.log('Student or amount not found');
-    //         res.status(404).send('Student with the specified Register No an d Mobile No not found');
-    //     }
-    // }
     try {
         // Find the student by registerNo and mobileNo
-        const student = await ApplicantModel.findOne({ registerNo: registerNo});
+        const student = await ApplicantModel.findOne({ registerNo: registerNo });
 
         if (!student) {
             console.log('Student not found');
             return res.status(404).send('Student with the specified Register No and not found');
         }
+        const acyearData = await AcademicModel.findOne({ active: '1' });
+        console.log(acyearData)
+        if (!acyearData) {
+            return res.status(404).send('Active academic year not found');
+        }
+        const currentAcyear = acyearData.acyear;
+        console.log('currentAcyear', currentAcyear)
+        const [startYear, endYear] = currentAcyear.split('-').map(Number);
+        const previousAcyear = `${startYear - 1}-${endYear - 1}`;
+        console.log(previousAcyear)
 
-        // Find all matching entries in AmountModel for the given registerNo and sum the scholamt
-        const amounts = await AmountModel.find({ registerNo });
+        const amounts = await AmountModel.find({ registerNo, acyear: previousAcyear });
         const totalScholamt = amounts.reduce((sum, entry) => sum + entry.scholamt, 0);
 
         // Combine student data with the total scholamt and send the response
