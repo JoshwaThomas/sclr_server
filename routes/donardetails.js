@@ -324,6 +324,7 @@ router.post('/scholtype', async (req, res) => {
 router.get('/allreport', async (req, res) => {
     try {
         const amounts = await AmountModel.find();
+        // const reapplicants = await RenewalModel.find()
         const applicants = await ApplicantModel.find();
         const donars = await DonarModel.find();
 
