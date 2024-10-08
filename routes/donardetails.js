@@ -324,21 +324,26 @@ router.post('/scholtype', async (req, res) => {
 router.get('/allreport', async (req, res) => {
     try {
         const amounts = await AmountModel.find();
-        // const reapplicants = await RenewalModel.find()
+        const reapplicants = await RenewalModel.find()
+        // console.log(reapplicants)
         const applicants = await ApplicantModel.find();
+        // console.log(applicants)
         const donars = await DonarModel.find();
 
         const combinedData = amounts.map(amount => {
+            const reapplicant = reapplicants.find(app => app.registerNo === amount.registerNo)
             const applicant = applicants.find(app => app.registerNo === amount.registerNo);
             const donar = donars.find(don => don._id.toString() === amount.scholdonar);
-
+            // console.log(amount.fresherOrRenewal)
             return {
                 ...amount.toObject(),
+                ...reapplicant ? reapplicant.toObject() : {},
                 ...applicant ? applicant.toObject() : {},
                 ...donar ? donar.toObject() : {},
                 donarName: donar ? donar.name : null,
                 smobileNo: applicant ? applicant.mobileNo : null,
                 name: applicant ? applicant.name : null, 
+                fresherOrRenewal: amount ? amount.fresherOrRenewal : null,
             };
         });
 
