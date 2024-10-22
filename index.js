@@ -18,7 +18,6 @@ const DateMang = require('./routes/datemang')
 const AcademicModel = require('./models/academic')
 // const bcrypt = require('bcryptjs');
 
-
 const app = express()
 app.use(cors({
     origin: process.env.FRONTEND_URL,
