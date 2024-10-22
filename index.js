@@ -117,7 +117,7 @@ app.post("/renewal", upload.single("jamath"), async (req, res) => {
     try {
         const academic = await AcademicModel.findOne({ active: 1 });
         const student = await ApplicantModel.findOne({ registerNo });
-        const student1 = await RenewalModel.findOne({ registerNo, acyear:academic.acyear });
+        const student1 = await RenewalModel.findOne({ registerNo, acyear: academic.acyear });
 
         if (student && student.acyear === academic.acyear) {
             console.log('Fresher application:', student.acyear);
@@ -153,6 +153,41 @@ app.post("/renewal", upload.single("jamath"), async (req, res) => {
     } catch (err) {
         console.error('Error fetching student data:', err);
         res.status(500).send({ message: 'Internal server error', error: err.message });
+    }
+});
+
+app.post('/api/admin/student/update', upload.single("jamath"), async (req, res) => {
+    try {
+        const { registerNo } = req.body; // Extract registerNo from request body
+        console.log(registerNo);
+        const percentageOfMarkSchool = req.body.percentageOfMarkSchool && req.body.percentageOfMarkSchool !== "undefined" ? Number(req.body.percentageOfMarkSchool) : null;
+        const yearOfPassing = req.body.yearOfPassing && req.body.yearOfPassing !== "undefined" ? Number(req.body.yearOfPassing) : null;
+        const siblingsNo = req.body.siblingsNo && !isNaN(req.body.siblingsNo) ? Number(req.body.siblingsNo) : null;
+        const siblingsIncome = req.body.siblingsIncome && !isNaN(req.body.siblingsIncome) ? Number(req.body.siblingsIncome) : null;
+    
+        const updatedFields = {
+            ...req.body,
+            percentageOfMarkSchool,
+            yearOfPassing,
+            siblingsNo,
+            siblingsIncome,
+            jamath: req.file ? req.file.path : null // Update jamath only if a file is uploaded
+        };
+        const academic = await AcademicModel.findOne({ active: 1 });
+        const update = await ApplicantModel.findOneAndUpdate(
+            { registerNo, acyear: academic.acyear }, // Query based on registerNo and academic year
+            { $set: updatedFields }, // Set the updated fields
+            { new: true } // Return the updated document
+        );
+
+        if (update) {
+            res.json({ update, success: true }); // Send success response if update is successful
+        } else {
+            res.status(404).json({ message: 'Student not found' }); // Send error if student not found
+        }
+    } catch (err) {
+        console.log(err); // Log the error for debugging
+        res.status(500).json({ message: 'Failed to update student information', error: err }); // Send error response
     }
 });
 
@@ -198,6 +233,23 @@ app.post("/renewal", upload.single("jamath"), async (req, res) => {
 //         .catch(err => res.json({ success: false, error: err }));
 
 // })
+
+// worked adminside stu update
+// app.post('/api/admin/student/update', async (req, res) => {
+//     try {
+//         const { registerNo } = req.body;
+
+//         const update = await ApplicantModel.findOneAndUpdate({ registerNo }, req.body, { new: true });
+
+//         if (update) {
+//             res.json(update);
+//         } else {
+//             res.status(404).json({ message: 'Student not found' });
+//         }
+//     } catch (err) {
+//         res.status(500).json(err);
+//     }
+// });
 
 app.post("/api/forgotpass", async (req, res) => {
     const { registerNo, mobileNo, aadhar, password } = req.body;
@@ -245,10 +297,10 @@ app.post("/api/admin/action", async (req, res) => {
     const { registerNo } = req.body;
 
     try {
-        const acyearData = await AcademicModel.findOne({active:'1'})
+        const acyearData = await AcademicModel.findOne({ active: '1' })
         const curAcyear = acyearData.acyear;
         console.log(curAcyear)
-        const register = await RenewalModel.findOne({ registerNo, acyear:curAcyear});
+        const register = await RenewalModel.findOne({ registerNo, acyear: curAcyear });
         console.log(register)
         if (!register) {
             const result = await ApplicantModel.findOneAndUpdate(
@@ -273,10 +325,10 @@ app.post("/api/admin/action", async (req, res) => {
 app.post("/api/admin/actionreject", async (req, res) => {
     const { registerNo } = req.body;
     try {
-        const acyearData = await AcademicModel.findOne({active:'1'})
+        const acyearData = await AcademicModel.findOne({ active: '1' })
         const curAcyear = acyearData.acyear;
         console.log(curAcyear)
-        const register = await RenewalModel.findOne({ registerNo, acyear:curAcyear});
+        const register = await RenewalModel.findOne({ registerNo, acyear: curAcyear });
 
         if (!register) {
             const result = await ApplicantModel.findOneAndUpdate(
@@ -511,21 +563,7 @@ app.put('/api/admin/donar/:id', (req, res) => {
     res.send(`Donor ${donorId} updated successfully`);
 });
 
-app.post('/api/admin/student/update', async (req, res) => {
-    try {
-        const { registerNo } = req.body;
 
-        const update = await ApplicantModel.findOneAndUpdate({ registerNo }, req.body, { new: true });
-
-        if (update) {
-            res.json(update);
-        } else {
-            res.status(404).json({ message: 'Student not found' });
-        }
-    } catch (err) {
-        res.status(500).json(err);
-    }
-});
 
 
 const PORT = process.env.PORT || 3006;

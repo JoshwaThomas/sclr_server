@@ -37,13 +37,10 @@ router.get('/counts', async (req, res) => {
 
         const damTotal = await ApplicantModel.countDocuments({ acyear, procategory: { $in: ['Aided', 'SFM'] }, deeniyath: 'Yes' })
         const mamTotal = await ApplicantModel.countDocuments({ acyear, procategory: { $in: ['Aided', 'SFM'] }, deeniyath: 'No' })
-        // const dsmTotal = await ApplicantModel.countDocuments({acyear, procategory: 'SFM', deeniyath: 'Yes'})
         const dwTotal = await ApplicantModel.countDocuments({ acyear, procategory: 'SFW', deeniyath: 'Yes' })
         const mwTotal = await ApplicantModel.countDocuments({ acyear, procategory: 'SFW', deeniyath: 'No' })
 
         const semCount = await ApplicantModel.countDocuments({ acyear, semPercentage: 0 })
-
-
 
         const fSem = await ApplicantModel.countDocuments({ acyear, ugOrPg: 'UG', semester: 'I' });
         const sSem = await ApplicantModel.countDocuments({ acyear, ugOrPg: 'UG', semester: 'II' });
@@ -56,6 +53,7 @@ router.get('/counts', async (req, res) => {
         const psSem = await ApplicantModel.countDocuments({ acyear, ugOrPg: 'PG', semester: 'II' });
         const ptSem = await ApplicantModel.countDocuments({ acyear, ugOrPg: 'PG', semester: 'III' });
         const pfourSem = await ApplicantModel.countDocuments({ acyear, ugOrPg: 'PG', semester: 'IV' });
+console.log(pfSem, psSem, ptSem, pfourSem)
 
         const uniqueRegisterNos = await AmountModel.distinct("registerNo", { acyear });
         const totalBenefit = uniqueRegisterNos.length;
