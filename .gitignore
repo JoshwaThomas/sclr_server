@@ -6,5 +6,5 @@ node_modules/
 
 # Ignore any logs
 *.log
-
+#zamath letters
 zamathfiles/
