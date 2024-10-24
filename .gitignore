@@ -1,2 +1,9 @@
-node_modules
+# Ignore node_modules directory
+node_modules/
+zamathfiles/
+# Ignore environment variable files
 .env
+
+# Ignore any logs
+*.log
+#zamath letters

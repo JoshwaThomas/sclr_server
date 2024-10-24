@@ -11,9 +11,18 @@ const ApplicantSchema = new mongoose.Schema({
     scholarship: String,
     ugOrPg : String,
     semester : String,
-    name : String,
-    registerNo : String,
-    dept : String,
+    name : {
+        type: String,
+        required: true
+    },
+    registerNo : {
+        type: String,
+        required: true
+    },
+    dept : {
+        type: String,
+        required: true
+    },
     section : String,
     religion : String,
     procategory : String,
@@ -24,8 +33,14 @@ const ApplicantSchema = new mongoose.Schema({
     specialCategory : String,
     //community : String,
     hostel : String,
-    mobileNo : Number,
-    emailId : String,
+    mobileNo : {
+        type: String,
+        required: true
+    },
+    emailId : {
+        type: String,
+        required: true
+    },
     aadhar : Number,
     fatherName : String,
     fatherNo : Number,
@@ -75,12 +90,18 @@ const ApplicantSchema = new mongoose.Schema({
     siblingsNo : { type: Number, default: 0 },
     siblingsOccupation : String,
     siblingsIncome : { type: Number, default: 0 },
-    jamath: String,
+    jamath: {
+        type: String,
+        required: true
+    },
     action: {
         type: Number,
         default: 0
     },
-    password: String,
+    password: {
+        type: String,
+        required: true
+    },
 })
 
 //Apply the auto increment because using application No.
