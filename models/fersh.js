@@ -37,10 +37,10 @@ const ApplicantSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    emailId : {
-        type: String,
-        required: true
-    },
+    // emailId : {
+    //     type: String,
+    //     required: true
+    // },
     aadhar : Number,
     fatherName : String,
     fatherNo : Number,
