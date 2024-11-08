@@ -53,7 +53,22 @@ router.get('/counts', async (req, res) => {
         const psSem = await ApplicantModel.countDocuments({ acyear, ugOrPg: 'PG', semester: 'II' });
         const ptSem = await ApplicantModel.countDocuments({ acyear, ugOrPg: 'PG', semester: 'III' });
         const pfourSem = await ApplicantModel.countDocuments({ acyear, ugOrPg: 'PG', semester: 'IV' });
-console.log(pfSem, psSem, ptSem, pfourSem)
+        // console.log('f', fSem, 's', sSem, 't', tSem, 'f', fourSem, 'fi', fivSem, 'si', sixSem, 'pgf',pfSem, 'ps',psSem, 'pt',ptSem, 'pf',pfourSem)
+        
+
+        const rfSem = await RenewalModel.countDocuments({ acyear, ugOrPg: 'UG', semester: 'I' });
+        const rsSem = await RenewalModel.countDocuments({ acyear, ugOrPg: 'UG', semester: 'II' });
+        const rtSem = await RenewalModel.countDocuments({ acyear, ugOrPg: 'UG', semester: 'III' });
+        const rfourSem = await RenewalModel.countDocuments({ acyear, ugOrPg: 'UG', semester: 'IV' });
+        const rfivSem = await RenewalModel.countDocuments({ acyear, ugOrPg: 'UG', semester: 'V' });
+        const rsixSem = await RenewalModel.countDocuments({ acyear, ugOrPg: 'UG', semester: 'VI' });
+
+        const rpfSem = await RenewalModel.countDocuments({ acyear, ugOrPg: 'PG', semester: 'I' });
+        const rpsSem = await RenewalModel.countDocuments({ acyear, ugOrPg: 'PG', semester: 'II' });
+        const rptSem = await RenewalModel.countDocuments({ acyear, ugOrPg: 'PG', semester: 'III' });
+        const rpfourSem = await RenewalModel.countDocuments({ acyear, ugOrPg: 'PG', semester: 'IV' });
+        // console.log('rf', rfSem, 'rs', rsSem, 'rt', rtSem, 'rf', rfourSem, 'rfi', rfivSem, 'rsi', rsixSem, 'rpgf',rpfSem, 'rps',rpsSem, 'rpt',rptSem, 'rpf',rpfourSem)
+        
 
         const uniqueRegisterNos = await AmountModel.distinct("registerNo", { acyear });
         const totalBenefit = uniqueRegisterNos.length;
@@ -109,6 +124,12 @@ console.log(pfSem, psSem, ptSem, pfourSem)
             thirdYear: (fivSem + sixSem),
             pgfirstYear: (pfSem + psSem),
             pgsecYear: (ptSem + pfourSem),
+
+            rfirstYear: (rfSem + rsSem),
+            rsecYear: (rtSem + rfourSem),
+            rthirdYear: (rfivSem + rsixSem),
+            rpgfirstYear: (rpfSem + rpsSem),
+            rpgsecYear: (rptSem + rpfourSem),
             aaCount,
             amCount,
             selfmCount,

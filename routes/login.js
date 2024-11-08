@@ -64,7 +64,7 @@ router.post('/login', async (req, res) => {
             // Check if passwords match (use bcrypt if passwords are hashed)
             if (password === staff.password) {
                 console.log("Password matches");
-                const token = jwt.sign({ id: staff._id, role: staff.role }, JWT_SECRET, { expiresIn: '15m' });
+                const token = jwt.sign({ id: staff._id, role: staff.role }, JWT_SECRET, { expiresIn: '30m' });
                 return res.json({ status: "exist", role: staff.role, token });
             } else {
                 return res.json({ status: "wrong password" });
