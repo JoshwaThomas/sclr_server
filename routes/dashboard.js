@@ -163,3 +163,85 @@ router.get('/counts', async (req, res) => {
     }
 });
 module.exports = router;
+
+router.get('/columnBarData', async (req, res) => {
+    try {
+        const activeAcademicYear = await AcademicModel.findOne({ active: '1' });
+        if (!activeAcademicYear) {
+            return res.status(404).json({ message: 'No active academic year found' });
+        }
+
+        const acyear = activeAcademicYear.acyear;
+
+        // Aggregation pipeline to count data directly in MongoDB
+        const result = await ApplicantModel.aggregate([
+            {
+                $lookup: {
+                    from: "amounts", // Replace with your actual collection name for AmountModel
+                    localField: "registerNo",
+                    foreignField: "registerNo",
+                    as: "scholarshipInfo",
+                },
+            },
+            {
+                $unwind: "$scholarshipInfo",
+            },
+            {
+                $match: {
+                    "scholarshipInfo.acyear": acyear,
+                    "scholarshipInfo.scholamt": { $gt: 0 },
+                },
+            },
+            {
+                $addFields: {
+                    yearLabel: {
+                        $switch: {
+                            branches: [
+                                { case: { $and: [{ $eq: ["$ugOrPg", "UG"] }, { $in: ["$semester", ["I", "II"]] }] }, then: "I UG" },
+                                { case: { $and: [{ $eq: ["$ugOrPg", "UG"] }, { $in: ["$semester", ["III", "IV"]] }] }, then: "II UG" },
+                                { case: { $and: [{ $eq: ["$ugOrPg", "UG"] }, { $in: ["$semester", ["V", "VI"]] }] }, then: "III UG" },
+                                { case: { $and: [{ $eq: ["$ugOrPg", "PG"] }, { $in: ["$semester", ["I", "II"]] }] }, then: "I PG" },
+                                { case: { $and: [{ $eq: ["$ugOrPg", "PG"] }, { $in: ["$semester", ["III", "IV"]] }] }, then: "II PG" },
+                            ],
+                            default: null,
+                        },
+                    },
+                },
+            },
+            {
+                $group: {
+                    _id: { yearLabel: "$yearLabel", procategory: "$procategory" },
+                    count: { $sum: 1 },
+                },
+            },
+        ]);
+
+        // Process the aggregated result into the desired format
+        const counts = {
+            'I UG': { Men: 0, Women: 0, Total: 0 },
+            'II UG': { Men: 0, Women: 0, Total: 0 },
+            'III UG': { Men: 0, Women: 0, Total: 0 },
+            'I PG': { Men: 0, Women: 0, Total: 0 },
+            'II PG': { Men: 0, Women: 0, Total: 0 },
+        };
+
+        result.forEach(({ _id, count }) => {
+            const { yearLabel, procategory } = _id;
+
+            if (yearLabel && counts[yearLabel]) {
+                if (procategory === 'SFW') {
+                    counts[yearLabel].Women += count;
+                } else if (['SFM', 'Aided'].includes(procategory)) {
+                    counts[yearLabel].Men += count;
+                }
+                counts[yearLabel].Total += count;
+            }
+        });
+
+        res.json(counts);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+module.exports = router;
