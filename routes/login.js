@@ -42,10 +42,9 @@ const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
 const bcrypt = require('bcryptjs'); // For hashed passwords
 const crypto = require('crypto');
-
 dotenv.config();
 const JWT_SECRET = process.env.JWT_SECRET || 'Josha2422niliaw63';
-const Staff = require('../models/staff'); // Your Staff model
+const Staff = require('../models/staff'); 
 const ApplicantModel = require('../models/fersh'); 
 
 
@@ -97,20 +96,26 @@ router.post('/refresh-token', (req, res) => {
     }
 
     try {
-        // Decode the token (verify throws error if invalid/expired)
-        const decoded = jwt.verify(token, JWT_SECRET);
-
-        // Generate a new token with extended expiry
+        const decoded = jwt.decode(token);
+        // console.log("Decoded",decoded)
+        if (!decoded) {
+            return res.status(403).json({ status: 'fail', message: 'Invalid token' });
+        }
+        const currentTime = Math.floor(Date.now() / 1000);
+        if (decoded.exp < currentTime) {
+            return res.status(403).json({ status: 'fail', message: 'Token expired' });
+        }
         const newToken = jwt.sign(
             { id: decoded.id, role: decoded.role },
             JWT_SECRET,
-            { expiresIn: '30m' } // Extend by 30 minutes
+            { expiresIn: '30m' } 
         );
+        // console.log("newToken",newToken)
 
         return res.json({ status: 'success', newToken });
     } catch (e) {
-        console.log('Refresh token failed:', e);
-        return res.status(403).json({ status: 'fail', message: 'Invalid or expired token' });
+        console.error('Error during token refresh:', e);
+        return res.status(500).json({ status: 'fail', message: 'Internal server error' });
     }
 });
 
