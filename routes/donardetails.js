@@ -225,6 +225,7 @@ router.get('/donardata', (req,res) => {
 //     }
 // });
 
+//donor amt check and transfer the amt 
 router.put('/donar/:id', async (req, res) => {
     try {
         const donor = await DonarModel.findById(req.params.id);
@@ -232,6 +233,7 @@ router.put('/donar/:id', async (req, res) => {
             const balanceField = req.body.balanceField || 'balance';
             if (donor[balanceField] >= req.body.amount) {
                 donor[balanceField] -= parseFloat(req.body.amount);
+                console.log("hello",donor[balanceField])
                 await donor.save();
                 res.status(200).json({ updatedBalance: donor[balanceField] });
             } else {
@@ -251,8 +253,8 @@ router.post('/freshamt', async (req, res) => {
     console.log({registerNo})
     try {
         const donor = await DonarModel.findById(req.body.scholdonar);
-        if (donor && donor.balance || donor.zakkathbal >= req.body.scholamt) {
-            console.log(donor)
+        if (donor) {
+            console.log('donor',donor)
             await AmountModel.create(req.body);
             res.status(201).send('Amount data saved successfully');
         } 

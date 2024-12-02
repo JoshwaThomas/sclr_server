@@ -193,7 +193,16 @@ router.get('/donarletter', async (req, res) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 })
-
+router.delete('/delete/:registerNo', async (req, res) => {
+    const {registerNo} = req.params
+    const stud = await ApplicantModel.findOne({registerNo})
+    if(stud){
+        const data = await ApplicantModel.deleteOne({registerNo: registerNo})
+        console.log("data",data)
+    }
+    res.status(200).json({ message: 'Data Deleted successfully.' });
+    console.log("stud",stud)
+})
 
 module.exports = router;
 

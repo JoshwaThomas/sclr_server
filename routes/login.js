@@ -97,15 +97,19 @@ router.post('/refresh-token', (req, res) => {
     }
 
     try {
-        // Decode the token 
+        // Decode the token (verify throws error if invalid/expired)
         const decoded = jwt.verify(token, JWT_SECRET);
 
-        // Generate a new token with extended time
-        const newToken = jwt.sign({ id: decoded.id, role: decoded.role }, JWT_SECRET, { expiresIn: '5m' });
+        // Generate a new token with extended expiry
+        const newToken = jwt.sign(
+            { id: decoded.id, role: decoded.role },
+            JWT_SECRET,
+            { expiresIn: '30m' } // Extend by 30 minutes
+        );
 
         return res.json({ status: 'success', newToken });
     } catch (e) {
-        console.log(e);
+        console.log('Refresh token failed:', e);
         return res.status(403).json({ status: 'fail', message: 'Invalid or expired token' });
     }
 });
