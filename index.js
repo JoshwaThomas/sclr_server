@@ -160,6 +160,9 @@ app.post('/api/admin/student/update', upload.single("jamath"), async (req, res) 
     try {
         const { registerNo } = req.body; // Extract registerNo from request body
         console.log(registerNo);
+        const classAttendancePer = req.body.classAttendancePer && req.body.classAttendancePer !== "undefined" ? Number(req.body.classAttendancePer) : null;
+        const deeniyathPer = req.body.deeniyathPer && req.body.deeniyathPer !== "undefined" ? Number(req.body.deeniyathPer) : null;
+        const semPercentage = req.body.semPercentage && req.body.semPercentage !== "undefined" ? Number(req.body.semPercentage) : null;
         const percentageOfMarkSchool = req.body.percentageOfMarkSchool && req.body.percentageOfMarkSchool !== "undefined" ? Number(req.body.percentageOfMarkSchool) : null;
         const yearOfPassing = req.body.yearOfPassing && req.body.yearOfPassing !== "undefined" ? Number(req.body.yearOfPassing) : null;
         const siblingsNo = req.body.siblingsNo && !isNaN(req.body.siblingsNo) ? Number(req.body.siblingsNo) : null;
@@ -167,6 +170,9 @@ app.post('/api/admin/student/update', upload.single("jamath"), async (req, res) 
     
         const updatedFields = {
             ...req.body,
+            classAttendancePer,
+            deeniyathPer,
+            semPercentage,
             percentageOfMarkSchool,
             yearOfPassing,
             siblingsNo,
