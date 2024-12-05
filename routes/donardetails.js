@@ -205,26 +205,6 @@ router.get('/donardata', (req,res) => {
     .catch(err => res.json(err));
 });
 
-//Accept Amount transanction function check the balance for donar_balance 
-// router.put('/donar/:id', async (req, res) => {
-//     try {
-//         const donor = await DonarModel.findById(req.params.id);
-//         if (donor) {
-//             if (donor.balance >= req.body.amount) {
-//                 donor.balance -= parseFloat(req.body.amount);
-//                 await donor.save();
-//                 res.status(200).json({ updatedBalance: donor.balance });
-//             } else {
-//                 res.status(400).json({ message: 'Insufficient balance', availableBalance: donor.balance });
-//             }
-//         } else {
-//             res.status(404).send('Donor not found');
-//         }
-//     } catch (err) {
-//         res.status(500).send(err);
-//     }
-// });
-
 //donor amt check and transfer the amt 
 router.put('/donar/:id', async (req, res) => {
     try {
@@ -417,18 +397,6 @@ router.get("/donoracyear-report", (req,res) => {
     .then(rusers => res.json(rusers))
     .catch(err => res.json(err));
 })
-
-// router.get('/last-donor-id', async (req, res) => {
-//     try {
-//         const lastDonor = await DonarModel.findOne().sort({ did: -1 }).exec();
-//         const lastDid = lastDonor ? parseInt(lastDonor.did, 10) : 0;
-//         console.log('lastDonor :', lastDonor)
-//         console.log('lastDid :', lastDid)
-//         res.json({ lastDid });
-//     } catch (error) {
-//         res.status(500).json({ error: 'Error fetching last donor ID' });
-//     }
-// });
 
 router.get('/last-donor-id', async (req, res) => {
     try {
