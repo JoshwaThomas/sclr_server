@@ -30,17 +30,26 @@ router.get('/counts', async (req, res) => {
 
         const damCount = await ApplicantModel.countDocuments({ acyear, procategory: { $in: ['Aided', 'SFM'] }, deeniyath: 'Yes', deeniyathPer: 0 })
         const mamCount = await ApplicantModel.countDocuments({ acyear, procategory: { $in: ['Aided', 'SFM'] }, deeniyath: 'No', deeniyathPer: 0 })
+        const damCountr = await RenewalModel.countDocuments({ acyear, procategory: { $in: ['Aided', 'SFM'] }, deeniyath: 'Yes', deeniyathPer: 0 })
+        const mamCountr = await RenewalModel.countDocuments({ acyear, procategory: { $in: ['Aided', 'SFM'] }, deeniyath: 'No', deeniyathPer: 0 })
 
         // const dsmCount = await ApplicantModel.countDocuments({acyear, procategory: 'SFM', deeniyath: 'Yes', deeniyathPer: 0})
         const dwCount = await ApplicantModel.countDocuments({ acyear, procategory: 'SFW', deeniyath: 'Yes', deeniyathPer: 0 })
         const mwCount = await ApplicantModel.countDocuments({ acyear, procategory: 'SFW', deeniyath: 'No', deeniyathPer: 0 })
+        const dwCountr = await RenewalModel.countDocuments({ acyear, procategory: 'SFW', deeniyath: 'Yes', deeniyathPer: 0 })
+        const mwCountr = await RenewalModel.countDocuments({ acyear, procategory: 'SFW', deeniyath: 'No', deeniyathPer: 0 })
 
         const damTotal = await ApplicantModel.countDocuments({ acyear, procategory: { $in: ['Aided', 'SFM'] }, deeniyath: 'Yes' })
         const mamTotal = await ApplicantModel.countDocuments({ acyear, procategory: { $in: ['Aided', 'SFM'] }, deeniyath: 'No' })
         const dwTotal = await ApplicantModel.countDocuments({ acyear, procategory: 'SFW', deeniyath: 'Yes' })
         const mwTotal = await ApplicantModel.countDocuments({ acyear, procategory: 'SFW', deeniyath: 'No' })
+        const damTotalr = await RenewalModel.countDocuments({ acyear, procategory: { $in: ['Aided', 'SFM'] }, deeniyath: 'Yes' })
+        const mamTotalr = await RenewalModel.countDocuments({ acyear, procategory: { $in: ['Aided', 'SFM'] }, deeniyath: 'No' })
+        const dwTotalr = await RenewalModel.countDocuments({ acyear, procategory: 'SFW', deeniyath: 'Yes' })
+        const mwTotalr = await RenewalModel.countDocuments({ acyear, procategory: 'SFW', deeniyath: 'No' })
 
-        const semCount = await ApplicantModel.countDocuments({ acyear, semPercentage: 0 })
+        const semCount = await ApplicantModel.countDocuments({ acyear, semPercentage: 0, semester: { $in: ['III', 'IV', 'V', 'VI', 'II'] } })
+        const semCountr = await RenewalModel.countDocuments({ acyear, semPercentage: 0, semester: { $in: ['III', 'IV', 'V', 'VI', 'II'] } })
 
         const fSem = await ApplicantModel.countDocuments({ acyear, ugOrPg: 'UG', semester: 'I' });
         const sSem = await ApplicantModel.countDocuments({ acyear, ugOrPg: 'UG', semester: 'II' });
@@ -54,7 +63,7 @@ router.get('/counts', async (req, res) => {
         const ptSem = await ApplicantModel.countDocuments({ acyear, ugOrPg: 'PG', semester: 'III' });
         const pfourSem = await ApplicantModel.countDocuments({ acyear, ugOrPg: 'PG', semester: 'IV' });
         // console.log('f', fSem, 's', sSem, 't', tSem, 'f', fourSem, 'fi', fivSem, 'si', sixSem, 'pgf',pfSem, 'ps',psSem, 'pt',ptSem, 'pf',pfourSem)
-        
+
 
         const rfSem = await RenewalModel.countDocuments({ acyear, ugOrPg: 'UG', semester: 'I' });
         const rsSem = await RenewalModel.countDocuments({ acyear, ugOrPg: 'UG', semester: 'II' });
@@ -68,7 +77,7 @@ router.get('/counts', async (req, res) => {
         const rptSem = await RenewalModel.countDocuments({ acyear, ugOrPg: 'PG', semester: 'III' });
         const rpfourSem = await RenewalModel.countDocuments({ acyear, ugOrPg: 'PG', semester: 'IV' });
         // console.log('rf', rfSem, 'rs', rsSem, 'rt', rtSem, 'rf', rfourSem, 'rfi', rfivSem, 'rsi', rsixSem, 'rpgf',rpfSem, 'rps',rpsSem, 'rpt',rptSem, 'rpf',rpfourSem)
-        
+
 
         const uniqueRegisterNos = await AmountModel.distinct("registerNo", { acyear });
         const totalBenefit = uniqueRegisterNos.length;
@@ -89,75 +98,86 @@ router.get('/counts', async (req, res) => {
             acyear, procategory: 'SFW',
             classAttendancePer: 0
         });
-
-        res.json({
-            totalApplicants,
-            totalRenewal,
-            totalDonars,
-            totalBenefit,
-            scholamt,
-            donaramt,
-            totalApplication: (totalApplicants + totalRenewal),
-            ramCount,
-            rsfmCount,
-            rsfwCount,
-            ugCount,
-            pgCount,
-            ugPercent: (ugCount / (totalApplicants + totalRenewal)) * 100,
-            pgPercent: (pgCount / (totalApplicants + totalRenewal)) * 100,
-            amPercent: (amCount / totalApplicants) * 100,
-            sfmPercent: (sfmCount / totalApplicants) * 100,
-            sfwPercent: (sfwCount / totalApplicants) * 100,
-            mensTotal: ((amCount + sfmCount) / totalApplicants) * 100,
-            fSem,
-            sSem,
-            tSem,
-            fourSem,
-            fivSem,
-            sixSem,
-            pfSem,
-            psSem,
-            ptSem,
-            pfourSem,
-            firstYear: (fSem + sSem),
-            secYear: (tSem + fourSem),
-            thirdYear: (fivSem + sixSem),
-            pgfirstYear: (pfSem + psSem),
-            pgsecYear: (ptSem + pfourSem),
-
-            rfirstYear: (rfSem + rsSem),
-            rsecYear: (rtSem + rfourSem),
-            rthirdYear: (rfivSem + rsixSem),
-            rpgfirstYear: (rpfSem + rpsSem),
-            rpgsecYear: (rptSem + rpfourSem),
-            aaCount,
-            amCount,
-            selfmCount,
-            sfmCount,
-            selfwCount,
-            sfwCount,
-            damCount,
-            damTotal,
-            dwCount,
-            dwTotal,
-            aaComplete: (amCount - aaCount),
-            selfmComplete: (sfmCount - selfmCount),
-            selfwComplete: (sfwCount - selfwCount),
-            aCompleted: (damTotal - damCount),
-            wCompleted: (dwTotal - dwCount),
-            mamCount,
-            mamTotal,
-            mwCount,
-            mwTotal,
-            maCompleted: (mamTotal - mamCount),
-            mwCompleted: (mwTotal - mwCount),
-            semCount,
-            semComplete: (totalApplicants - semCount),
-
-
-
-
+        const raaCount = await RenewalModel.countDocuments({
+            acyear, procategory: 'Aided',
+            classAttendancePer: 0
         });
+        const rselfmCount = await RenewalModel.countDocuments({
+            acyear, procategory: 'SFM',
+            classAttendancePer: 0
+        });
+        const rselfwCount = await RenewalModel.countDocuments({
+            acyear, procategory: 'SFW',
+            classAttendancePer: 0
+        });
+        const totalApplication = totalApplicants + totalRenewal;
+            res.json({
+                totalApplicants,
+                totalRenewal,
+                totalDonars,
+                totalBenefit,
+                scholamt,
+                donaramt,
+                totalApplication: (totalApplicants + totalRenewal),
+                ramCount,
+                rsfmCount,
+                rsfwCount,
+                ugCount,
+                pgCount,
+                ugPercent: (ugCount / (totalApplicants + totalRenewal)) * 100,
+                pgPercent: (pgCount / (totalApplicants + totalRenewal)) * 100,
+                amPercent: (amCount / totalApplicants) * 100,
+                sfmPercent: (sfmCount / totalApplicants) * 100,
+                sfwPercent: (sfwCount / totalApplicants) * 100,
+                mensTotal: ((amCount + sfmCount) / totalApplicants) * 100,
+                fSem,
+                sSem,
+                tSem,
+                fourSem,
+                fivSem,
+                sixSem,
+                pfSem,
+                psSem,
+                ptSem,
+                pfourSem,
+                firstYear: (fSem + sSem),
+                secYear: (tSem + fourSem),
+                thirdYear: (fivSem + sixSem),
+                pgfirstYear: (pfSem + psSem),
+                pgsecYear: (ptSem + pfourSem),
+                rfirstYear: (rfSem + rsSem),
+                rsecYear: (rtSem + rfourSem),
+                rthirdYear: (rfivSem + rsixSem),
+                rpgfirstYear: (rpfSem + rpsSem),
+                rpgsecYear: (rptSem + rpfourSem),
+                aaCount: (aaCount + raaCount),
+                amCount,
+                selfmCount: (selfmCount + rselfmCount),
+                sfmCount,
+                selfwCount: (selfwCount + rselfwCount),
+                sfwCount,
+                damCount: damCount + damCountr,
+                damTotal: damTotal + damTotalr,
+                dwCount: dwCount + dwCountr,
+                dwTotal: dwTotal + dwTotalr,
+                aaComplete: (amCount - aaCount),
+                selfmComplete: (sfmCount - selfmCount),
+                selfwComplete: (sfwCount - selfwCount),
+                aCompleted: ((damTotal + damTotalr) - (damCount + damCountr)),
+                wCompleted: ((dwTotal + dwTotalr) - (dwCount + dwCountr)),
+                mamCount: mamCount + mamCountr,
+                mamTotal: mamTotal + mamTotalr,
+                mwCount: mwCount + mwCountr,
+                mwTotal: mwTotal + mwTotalr,
+                maCompleted: ((mamTotal + mamTotalr) - (mamCount + mamCountr)),
+                mwCompleted: ((mwTotal + mwTotalr) - (mwCount + mwCountr)),
+                semCount: semCount + semCountr,
+                semComplete: (totalApplication - (semCount + semCountr)),
+
+
+
+
+            });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
