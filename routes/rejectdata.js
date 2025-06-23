@@ -5,7 +5,8 @@ const AmountModel = require('../models/amt');
 const ApplicantModel = require('../models/fersh');
 const RenewalModel = require('../models/renewal');
 const DonarDataModel = require('../models/donardata');
-const DonarModel = require('../models/donar')
+const DonarModel = require('../models/donar');
+const Academic = require('../models/academic');
 
 
 router.post("/reject", (req, res) => {
@@ -97,25 +98,26 @@ router.get('/studstatus', async (req, res) => {
     try {
         const { registerNo } = req.query;
 
-        let applicant = await RenewalModel.findOne({ registerNo });
+        const currAcde = await Academic.findOne( { active: '1' });
+        let applicant = await RenewalModel.findOne({ registerNo: registerNo, acyear: currAcde.acyear });
 
         if (!applicant) {
-            applicant = await ApplicantModel.findOne({ registerNo });
+            applicant = await ApplicantModel.findOne({ registerNo: registerNo, acyear: currAcde.acyear });
         }
 
         if (applicant) {
                 console.log(applicant)
            
-                let data = await RejectModel.findOne({ registerNo });
+                let data = await RejectModel.findOne({ registerNo: registerNo, acyear: currAcde.acyear });
                 if (data) {
                     return res.json(data);
                 }
 
-                data = await RenewalModel.findOne({ registerNo });
+                data = await RenewalModel.findOne({ registerNo: registerNo, acyear: currAcde.acyear });
                 if (data) {
                     return res.json(data);
                 }
-                data = await ApplicantModel.findOne({ registerNo });
+                data = await ApplicantModel.findOne({ registerNo: registerNo, acyear: currAcde.acyear });
                 if (data) {
                     return res.json(data);
                 }
