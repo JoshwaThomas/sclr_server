@@ -542,6 +542,16 @@ app.get('/in-progress', async (req, res) => {
     }
 });
 
+app.get('/api/admin/studentdata', async (req, res) => {
+    try{
+        const data = await ApplicantModel.find();
+        res.json(data);
+    }catch(err){
+        console.log('error', err);
+        res.status(500).json({message: 'Internal Server Error'})
+    }
+}) 
+
 app.post('/api/admin/studentstatus', async (req, res) => {
     const { registerNo, mobileNo } = req.body;
 
