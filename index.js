@@ -167,7 +167,7 @@ app.post('/api/admin/student/update', upload.single("jamath"), async (req, res) 
         const yearOfPassing = req.body.yearOfPassing && req.body.yearOfPassing !== "undefined" ? Number(req.body.yearOfPassing) : null;
         const siblingsNo = req.body.siblingsNo && !isNaN(req.body.siblingsNo) ? Number(req.body.siblingsNo) : null;
         const siblingsIncome = req.body.siblingsIncome && !isNaN(req.body.siblingsIncome) ? Number(req.body.siblingsIncome) : null;
-    
+
         const updatedFields = {
             ...req.body,
             classAttendancePer,
@@ -542,15 +542,19 @@ app.get('/in-progress', async (req, res) => {
     }
 });
 
+
+
 app.get('/api/admin/studentdata', async (req, res) => {
-    try{
-        const data = await ApplicantModel.find();
-        res.json(data);
-    }catch(err){
+    try {
+        const students = await ApplicantModel.find();
+        const academic = await AcademicModel.findOne({ active: '1' });
+        res.json({ students, academic });
+    } catch (err) {
         console.log('error', err);
-        res.status(500).json({message: 'Internal Server Error'})
+        res.status(500).json({ message: 'Internal Server Error' });
     }
-}) 
+});
+
 
 app.post('/api/admin/studentstatus', async (req, res) => {
     const { registerNo, mobileNo } = req.body;
