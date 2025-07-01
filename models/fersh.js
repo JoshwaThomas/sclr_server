@@ -2,94 +2,89 @@ const mongoose = require('mongoose')
 const AutoIncrement = require('mongoose-sequence')(mongoose);
 
 const ApplicantSchema = new mongoose.Schema({
-    appno :  Number,
-    acyear : String,
-    fresherOrRenewal : {
+    appno: Number,
+    acyear: String,
+    fresherOrRenewal: {
         type: String,
-        default : 'Fresher'
+        default: 'Fresher'
     },
     scholarship: String,
-    ugOrPg : String,
-    semester : String,
-    name : {
+    ugOrPg: String,
+    semester: String,
+    name: {
         type: String,
         required: true
     },
-    registerNo : {
+    registerNo: {
         type: String,
         required: true
     },
-    dept : {
+    dept: {
         type: String,
         required: true
     },
-    section : String,
-    religion : String,
-    procategory : String,
-    address : String,
-    district : String,
-    state : String,
-    pin : Number,
-    specialCategory : String,
-    //community : String,
-    hostel : String,
-    mobileNo : {
+    section: String,
+    religion: String,
+    procategory: String,
+    address: String,
+    district: String,
+    state: String,
+    pin: Number,
+    specialCategory: String,
+    hostel: String,
+    mobileNo: {
         type: String,
         required: true
     },
-    // emailId : {
-    //     type: String,
-    //     required: true
-    // },
-    aadhar : Number,
-    fatherName : String,
-    fatherNo : Number,
-    fatherOccupation : String,
-    annualIncome : String,
-    schoolName : { type: String, default: 'null' },
-    yearOfPassing : { type: Number, default: 0 },
-    percentageOfMarkSchool : { type: Number, default: 0 },
-    preSemester : String,
-    semPercentage : {
+    aadhar: Number,
+    fatherName: String,
+    fatherNo: Number,
+    fatherOccupation: String,
+    annualIncome: String,
+    schoolName: { type: String, default: 'null' },
+    yearOfPassing: { type: Number, default: 0 },
+    percentageOfMarkSchool: { type: Number, default: 0 },
+    preSemester: String,
+    semPercentage: {
         type: Number,
         default: 0
     },
-    deeniyathPer : {
+    deeniyathPer: {
         type: Number,
         default: 0
     },
-    prevAttendance:{
+    prevAttendance: {
         type: Number,
         default: 0
     },
-    classAttendancePer :{
+    classAttendancePer: {
         type: Number,
         default: 0
     },
-    classAttendanceRem :{
+    classAttendanceRem: {
         type: String,
         default: 'Good'
     },
-    deeniyathRem :{
+    deeniyathRem: {
         type: String,
         default: 'Good'
     },
-    semRem :{
+    semRem: {
         type: String,
         default: 'Good'
     },
-    arrear : {
+    arrear: {
         type: Number,
         default: 0
     },
-    siblings : String,
-    attendance : String,
-    deeniyath : String,
-    hostelrep : String,
-    reason : String,
-    siblingsNo : { type: Number, default: 0 },
-    siblingsOccupation : String,
-    siblingsIncome : { type: Number, default: 0 },
+    siblings: String,
+    attendance: String,
+    deeniyath: String,
+    hostelrep: String,
+    reason: String,
+    siblingsNo: { type: Number, default: 0 },
+    siblingsOccupation: String,
+    siblingsIncome: { type: Number, default: 0 },
     jamath: {
         type: String,
         required: true
@@ -104,10 +99,7 @@ const ApplicantSchema = new mongoose.Schema({
     },
 })
 
-//Apply the auto increment because using application No.
 ApplicantSchema.plugin(AutoIncrement, { inc_field: 'appno' });
 
 const ApplicantModel = mongoose.model("applicant", ApplicantSchema)
 module.exports = ApplicantModel
-//const RenewalModel = mongoose.model("renewal", RenewalSchema)
-/*module.exports = RenewalModel*/

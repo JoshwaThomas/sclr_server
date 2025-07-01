@@ -98,63 +98,7 @@ app.post("/fresh", upload.single("jamath"), (req, res) => {
         });
 });
 
-app.post("/renewal", upload.single("jamath"), async (req, res) => {
-    console.log("Received file:", req.file); // Should show file information
-    console.log("Received body:", req.body);
 
-    const { registerNo } = req.body;
-    const siblingsNo = req.body.siblingsNo && !isNaN(req.body.siblingsNo) ? Number(req.body.siblingsNo) : null;
-    const siblingsIncome = req.body.siblingsIncome && !isNaN(req.body.siblingsIncome) ? Number(req.body.siblingsIncome) : null;
-
-    // Check the records for one more register
-    const applicantData = {
-        ...req.body,
-        siblingsNo,
-        siblingsIncome,
-        jamath: req.file ? req.file.path : null // Add file path to data
-    };
-
-    try {
-        const academic = await AcademicModel.findOne({ active: 1 });
-        const student = await ApplicantModel.findOne({ registerNo });
-        const student1 = await RenewalModel.findOne({ registerNo, acyear: academic.acyear });
-
-        if (student && student.acyear === academic.acyear) {
-            console.log('Fresher application:', student.acyear);
-            console.log('Academic year:', academic.acyear);
-            console.log('RegisterNo:', registerNo);
-            return res.json({ success: false, message: 'Already You Applied Fresher Application' });
-        }
-
-        if (student1 && student1.acyear === academic.acyear) {
-            console.log('Renewal application:', student.acyear);
-            console.log('Academic year:', academic.acyear);
-            console.log('RegisterNo:', registerNo);
-            return res.json({ success: false, message: 'Already You Applied Renewal Application' });
-        } else {
-
-            console.log('RegisterNo:', registerNo);
-            RenewalModel.findOne({ registerNo })
-                .then(existingUser => {
-
-                    RenewalModel.create(applicantData)
-                        .then(user => res.json({ success: true, user }))
-                        .catch(err => {
-                            console.error('Error creating renewal record:', err);
-                            res.status(500).json({ success: false, message: 'Failed to create record', error: err.message });
-                        });
-                })
-                .catch(err => {
-                    console.error('Error checking existing record:', err);
-                    res.status(500).json({ success: false, error: err.message });
-                });
-        }
-
-    } catch (err) {
-        console.error('Error fetching student data:', err);
-        res.status(500).send({ message: 'Internal server error', error: err.message });
-    }
-});
 
 app.post('/api/admin/student/update', upload.single("jamath"), async (req, res) => {
     try {
@@ -371,11 +315,6 @@ app.get("/fresh", (req, res) => {
         })
         .catch(err => res.json(err));
 });
-// app.get("/fresh", (req, res) => {
-//     ApplicantModel.find()
-//         .then(users => res.json(users))
-//         .catch(err => res.json(err));
-// })
 
 //get the student details for using renewal form and check the amount table bcz once fresher recive the amt then apply renewal
 app.get('/api/admin/students', async (req, res) => {
@@ -583,11 +522,71 @@ app.put('/api/admin/donar/:id', (req, res) => {
     res.send(`Donor ${donorId} updated successfully`);
 });
 
-
-
+// ----------------------------------------------------------------------------------------------------------------
 
 const PORT = process.env.PORT || 3006;
 
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-});
+app.listen(PORT, () => { console.log(`Server is running on port ${PORT}`) });
+
+// ----------------------------------------------------------------------------------------------------------------
+
+// Fetch Students for Application Menu after Login
+
+app.get('/api/admin/students', async (req, res) => {
+
+    const { registerNo } = req.query;
+
+    try {
+        const student = await ApplicantModel.findOne({ registerNo: registerNo });
+        if (!student) {
+            return res.status(404).send('Student with the specified Register No and not found');
+        }
+        const acyearData = await AcademicModel.findOne({ active: '1' });
+        if (!acyearData) {
+            return res.status(404).send('Active academic year not found');
+        }
+        const currentAcyear = acyearData.acyear;
+        const [startYear, endYear] = currentAcyear.split('-').map(Number);
+        const previousAcyear = `${startYear - 1}-${endYear - 1}`;
+        const amounts = await AmountModel.find({ registerNo, acyear: previousAcyear });
+        const totalScholamt = amounts.reduce((sum, entry) => sum + entry.scholamt, 0);
+        const response = { ...student.toObject(), scholamt: totalScholamt };
+        res.json(response);
+    }
+    catch (err) {
+        console.error('Error fetching student data:', err);
+        res.status(500).send({ message: 'Internal server error', error: err });
+    }
+})
+
+// ----------------------------------------------------------------------------------------------------------------
+
+// For Renewal Apply and also show details for Fresher
+
+app.post("/renewal", upload.single("jamath"), async (req, res) => {
+
+    const { registerNo } = req.body;
+    const siblingsNo = req.body.siblingsNo && !isNaN(req.body.siblingsNo) ? Number(req.body.siblingsNo) : null;
+    const siblingsIncome = req.body.siblingsIncome && !isNaN(req.body.siblingsIncome) ? Number(req.body.siblingsIncome) : null;
+    const applicantData = { ...req.body, siblingsNo, siblingsIncome, jamath: req.file ? req.file.path : null, }
+
+    try {
+        const academic = await AcademicModel.findOne({ active: 1 });
+        if (!academic) {
+            return res.status(500).json({ success: false, code: "NO_ACADEMIC_YEAR", message: "No active academic year" });
+        }
+        const student = await ApplicantModel.findOne({ registerNo });
+        const student1 = await RenewalModel.findOne({ registerNo, acyear: academic.acyear });
+        if (student && student.acyear === academic.acyear) {
+            return res.status(409).json({ success: false, code: "FRESHER_EXISTS", message: "Already You Applied Fresher Application" });
+        }
+        if (student1 && student1.acyear === academic.acyear) {
+            return res.status(409).json({ success: false, code: "RENEWAL_EXISTS", message: "Already You Applied Renewal Application" });
+        }
+        const created = await RenewalModel.create(applicantData);
+        return res.status(201).json({ success: true, code: "RENEWAL_SUCCESS", user: created });
+    } catch (err) {
+        console.error("Renewal submission error:", err);
+        return res.status(500).json({ success: false, code: "SERVER_ERROR", message: err.message });
+    }
+})
