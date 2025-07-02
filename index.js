@@ -54,49 +54,6 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage: storage });
 
-//   const upload = multer({ storage: storage,
-//     limits: { fileSize: 5 * 1024 * 1024 }
-//    });
-
-
-
-app.post("/fresh", upload.single("jamath"), (req, res) => {
-    console.log("Received file:", req.file); // Should show file information
-    console.log("Received body:", req.body);
-
-    const { registerNo } = req.body;
-    const yearOfPassing = req.body.yearOfPassing && req.body.yearOfPassing !== "undefined" ? Number(req.body.yearOfPassing) : null;
-    const siblingsNo = req.body.siblingsNo && req.body.siblingsNo !== "undefined" ? Number(req.body.siblingsNo) : null;
-    const siblingsIncome = req.body.siblingsIncome && req.body.siblingsIncome !== "undefined" ? Number(req.body.siblingsIncome) : null;
-
-    // Create the applicantData object with the processed values
-    const applicantData = {
-        ...req.body,
-        yearOfPassing,
-        siblingsNo,
-        siblingsIncome,
-        jamath: req.file ? req.file.path : null // Add file path to data
-    };
-
-    ApplicantModel.findOne({ registerNo })
-
-        .then((existingUsers) => {
-            if (existingUsers) {
-                return res.json({ success: false, message: "Register No. Already Existing" });
-            }
-
-            ApplicantModel.create(applicantData)
-                .then(users => res.json({ success: true, users }))
-                .catch(err => {
-                    console.error("Error saving applicant data:", err);
-                    res.json({ success: false, error: err });
-                });
-        })
-        .catch((err) => {
-            console.error("Error fetching student data:", err);
-            res.status(500).send({ message: "Internal server error", error: err });
-        });
-});
 
 
 
@@ -522,6 +479,59 @@ app.put('/api/admin/donar/:id', (req, res) => {
     res.send(`Donor ${donorId} updated successfully`);
 });
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // ----------------------------------------------------------------------------------------------------------------
 
 const PORT = process.env.PORT || 3006;
@@ -590,3 +600,35 @@ app.post("/renewal", upload.single("jamath"), async (req, res) => {
         return res.status(500).json({ success: false, code: "SERVER_ERROR", message: err.message });
     }
 })
+
+// ----------------------------------------------------------------------------------------------------------------
+
+// Fresh Application Submission
+
+app.post("/fresh", upload.single("jamath"), async (req, res) => {
+
+    try {
+        const { registerNo } = req.body;
+
+        const yearOfPassing = req.body.yearOfPassing && req.body.yearOfPassing !== "undefined" ? Number(req.body.yearOfPassing) : null;
+        const siblingsNo = req.body.siblingsNo && req.body.siblingsNo !== "undefined" ? Number(req.body.siblingsNo) : null;
+        const siblingsIncome = req.body.siblingsIncome && req.body.siblingsIncome !== "undefined" ? Number(req.body.siblingsIncome) : null;
+
+        const applicantData = {
+            ...req.body, yearOfPassing, siblingsNo,
+            siblingsIncome,
+            jamath: req.file ? req.file.path : null,
+        };
+
+        const existingUser = await ApplicantModel.findOne({ registerNo });
+
+        if (existingUser) { return res.json({ success: false, message: "Register No. Already Existing" })}
+
+        const newUser = await ApplicantModel.create(applicantData);
+        return res.json({ success: true, user: newUser });
+
+    } catch (err) {
+        console.error("Error during Fresh Application Submission : ", err);
+        return res.status(500).json({ success: false, message: "Internal server error", error: err });
+    }
+});
