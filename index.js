@@ -274,40 +274,40 @@ app.get("/fresh", (req, res) => {
 });
 
 //get the student details for using renewal form and check the amount table bcz once fresher recive the amt then apply renewal
-app.get('/api/admin/students', async (req, res) => {
-    const { registerNo } = req.query;
-    console.log(`Received request for registerNo: ${registerNo},`);
-    try {
-        // Find the student by registerNo and mobileNo
-        const student = await ApplicantModel.findOne({ registerNo: registerNo });
+// app.get('/api/admin/students', async (req, res) => {
+//     const { registerNo } = req.query;
+//     console.log(`Received request for registerNo: ${registerNo},`);
+//     try {
+//         // Find the student by registerNo and mobileNo
+//         const student = await ApplicantModel.findOne({ registerNo: registerNo });
 
-        if (!student) {
-            console.log('Student not found');
-            return res.status(404).send('Student with the specified Register No and not found');
-        }
-        const acyearData = await AcademicModel.findOne({ active: '1' });
-        console.log(acyearData)
-        if (!acyearData) {
-            return res.status(404).send('Active academic year not found');
-        }
-        const currentAcyear = acyearData.acyear;
-        console.log('currentAcyear', currentAcyear)
-        const [startYear, endYear] = currentAcyear.split('-').map(Number);
-        const previousAcyear = `${startYear - 1}-${endYear - 1}`;
-        console.log(previousAcyear)
+//         if (!student) {
+//             console.log('Student not found');
+//             return res.status(404).send('Student with the specified Register No and not found');
+//         }
+//         const acyearData = await AcademicModel.findOne({ active: '1' });
+//         console.log(acyearData)
+//         if (!acyearData) {
+//             return res.status(404).send('Active academic year not found');
+//         }
+//         const currentAcyear = acyearData.acyear;
+//         console.log('currentAcyear', currentAcyear)
+//         const [startYear, endYear] = currentAcyear.split('-').map(Number);
+//         const previousAcyear = `${startYear - 1}-${endYear - 1}`;
+//         console.log(previousAcyear)
 
-        const amounts = await AmountModel.find({ registerNo, acyear: previousAcyear });
-        const totalScholamt = amounts.reduce((sum, entry) => sum + entry.scholamt, 0);
+//         const amounts = await AmountModel.find({ registerNo, acyear: previousAcyear });
+//         const totalScholamt = amounts.reduce((sum, entry) => sum + entry.scholamt, 0);
 
-        // Combine student data with the total scholamt and send the response
-        const response = { ...student.toObject(), scholamt: totalScholamt };
-        res.json(response);
-    }
-    catch (err) {
-        console.error('Error fetching student data:', err); // Detailed logging
-        res.status(500).send({ message: 'Internal server error', error: err }); // Send full error
-    }
-});
+//         // Combine student data with the total scholamt and send the response
+//         const response = { ...student.toObject(), scholamt: totalScholamt };
+//         res.json(response);
+//     }
+//     catch (err) {
+//         console.error('Error fetching student data:', err); // Detailed logging
+//         res.status(500).send({ message: 'Internal server error', error: err }); // Send full error
+//     }
+// });
 
 app.put("/freshattSfmUpdate", async (req, res) => {
     const { updates, remarks } = req.body;
@@ -545,61 +545,171 @@ app.listen(PORT, () => { console.log(`Server is running on port ${PORT}`) });
 app.get('/api/admin/students', async (req, res) => {
 
     const { registerNo } = req.query;
+    console.log(registerNo);
 
     try {
         const student = await ApplicantModel.findOne({ registerNo: registerNo });
         if (!student) {
-            return res.status(404).send('Student with the specified Register No and not found');
+            return res.status(404).send('Student with the specified Register No not found');
         }
+
         const acyearData = await AcademicModel.findOne({ active: '1' });
         if (!acyearData) {
             return res.status(404).send('Active academic year not found');
         }
+
         const currentAcyear = acyearData.acyear;
+
+        // Check if student is Renewal or Fresher
+        let studentType = '';
+        let showOrBlock = 'block'; // Default show
+
+        const amountExists = await AmountModel.exists({ registerNo: registerNo });
+
+        if (amountExists) {
+            studentType = 'Renewal';
+
+            // Check in RenewalModel with registerNo and current acyear
+            const renewalData = await RenewalModel.findOne({ registerNo: registerNo, acyear: currentAcyear });
+
+            if (renewalData) {
+                showOrBlock = 'block';
+                console.log(`Renewal student data found. Status: ${showOrBlock}`);
+            } else {
+                showOrBlock = 'show';
+                console.log(`Renewal student data not found. Status: ${showOrBlock}`);
+            }
+
+        } else {
+            studentType = 'Fresher';
+
+            // Check in ApplicantModel with registerNo and current acyear
+            const fresherData = await ApplicantModel.findOne({ registerNo: registerNo, acyear: currentAcyear });
+
+            if (fresherData) {
+                showOrBlock = 'block';
+                console.log(`Fresher student data found. Status: ${showOrBlock}`);
+            } else {
+                showOrBlock = 'show';
+                console.log(`Fresher student data not found. Status: ${showOrBlock}`);
+            }
+        }
+
+        // Calculate previous year scholarship amount
         const [startYear, endYear] = currentAcyear.split('-').map(Number);
         const previousAcyear = `${startYear - 1}-${endYear - 1}`;
+
         const amounts = await AmountModel.find({ registerNo, acyear: previousAcyear });
         const totalScholamt = amounts.reduce((sum, entry) => sum + entry.scholamt, 0);
-        const response = { ...student.toObject(), scholamt: totalScholamt };
+
+        // Final response
+        const response = {
+            ...student.toObject(),
+            scholamt: totalScholamt,
+            studentType: studentType,
+            showOrBlock: showOrBlock
+        };
+
         res.json(response);
     }
     catch (err) {
         console.error('Error fetching student data:', err);
         res.status(500).send({ message: 'Internal server error', error: err });
     }
-})
-
+});
 // ----------------------------------------------------------------------------------------------------------------
 
 // For Renewal Apply and also show details for Fresher
 
 app.post("/renewal", upload.single("jamath"), async (req, res) => {
+    const { registerNo, studentType } = req.body;
 
-    const { registerNo } = req.body;
     const siblingsNo = req.body.siblingsNo && !isNaN(req.body.siblingsNo) ? Number(req.body.siblingsNo) : null;
     const siblingsIncome = req.body.siblingsIncome && !isNaN(req.body.siblingsIncome) ? Number(req.body.siblingsIncome) : null;
-    const applicantData = { ...req.body, siblingsNo, siblingsIncome, jamath: req.file ? req.file.path : null, }
+
+    const applicantData = {
+        ...req.body,
+        siblingsNo,
+        siblingsIncome,
+        jamath: req.file ? req.file.path : null
+    };
 
     try {
-        const academic = await AcademicModel.findOne({ active: 1 });
-        if (!academic) {
-            return res.status(500).json({ success: false, code: "NO_ACADEMIC_YEAR", message: "No active academic year" });
+        if (studentType === 'Fresher') {
+            const acyearData = await AcademicModel.findOne({ active: '1' });
+            if (!acyearData) return res.status(404).send('Active academic year not found');
+
+            const [startYear, endYear] = acyearData.acyear.split('-').map(Number);
+            const previousAcyear = `${startYear - 1}-${endYear - 1}`;
+
+            const missingObject = await ApplicantModel.findOne({ registerNo, acyear: previousAcyear });
+            console.log('Previous Year : ', missingObject);
+
+            if (missingObject) {
+                const fieldsToCarryForward = [
+                    'schoolName',
+                    'yearOfPassing',
+                    'percentageOfMarkSchool',
+                    'semPercentage',
+                    'deeniyathPer',
+                    'prevAttendance',
+                    'classAttendancePer',
+                    'classAttendanceRem',
+                    'deeniyathRem',
+                    'semRem',
+                    'arrear',
+                    'attendance',
+                    'scholarship',
+                    'password',
+                    'hostelrep',
+                    'reason'
+                ];
+
+                // Fill missing fields from previous year or schema defaults
+                fieldsToCarryForward.forEach(field => {
+                    if (
+                        applicantData[field] === undefined ||
+                        applicantData[field] === '' ||
+                        applicantData[field] === null ||
+                        applicantData[field] === 'undefined'
+                    ) {
+                        applicantData[field] = missingObject[field] ??
+                            (ApplicantModel.schema.paths[field]?.defaultValue instanceof Function
+                                ? ApplicantModel.schema.paths[field].defaultValue()
+                                : ApplicantModel.schema.paths[field]?.defaultValue ?? ''
+                            );
+                    }
+                });
+            }
+
+            applicantData.acyear = acyearData.acyear;
+            const created = await ApplicantModel.create(applicantData);
+            return res.status(201).json({ success: true, code: "FRESHER_SUCCESS", user: created });
+        } else {
+            const acyearData = await AcademicModel.findOne({ active: '1' });
+            if (!acyearData) return res.status(404).send('Active academic year not found');
+
+            applicantData.acyear = acyearData.acyear;
+
+            const fresherExists = await ApplicantModel.findOne({ registerNo, acyear: acyearData.acyear });
+            if (fresherExists) {
+                return res.status(409).json({ success: false, code: "FRESHER_EXISTS", message: "Already You Applied Fresher Application" });
+            }
+
+            const renewalExists = await RenewalModel.findOne({ registerNo, acyear: acyearData.acyear });
+            if (renewalExists) {
+                return res.status(409).json({ success: false, code: "RENEWAL_EXISTS", message: "Already You Applied Renewal Application" });
+            }
+
+            const created = await RenewalModel.create(applicantData);
+            return res.status(201).json({ success: true, code: "RENEWAL_SUCCESS", user: created });
         }
-        const student = await ApplicantModel.findOne({ registerNo });
-        const student1 = await RenewalModel.findOne({ registerNo, acyear: academic.acyear });
-        if (student && student.acyear === academic.acyear) {
-            return res.status(409).json({ success: false, code: "FRESHER_EXISTS", message: "Already You Applied Fresher Application" });
-        }
-        if (student1 && student1.acyear === academic.acyear) {
-            return res.status(409).json({ success: false, code: "RENEWAL_EXISTS", message: "Already You Applied Renewal Application" });
-        }
-        const created = await RenewalModel.create(applicantData);
-        return res.status(201).json({ success: true, code: "RENEWAL_SUCCESS", user: created });
-    } catch (err) {
-        console.error("Renewal submission error:", err);
-        return res.status(500).json({ success: false, code: "SERVER_ERROR", message: err.message });
+
+    } catch (error) {
+        console.error("Renewal submission error:", error);
+        return res.status(500).json({ success: false, code: "SERVER_ERROR", message: error.message });
     }
-})
+});
 
 // ----------------------------------------------------------------------------------------------------------------
 
@@ -622,7 +732,7 @@ app.post("/fresh", upload.single("jamath"), async (req, res) => {
 
         const existingUser = await ApplicantModel.findOne({ registerNo });
 
-        if (existingUser) { return res.json({ success: false, message: "Register No. Already Existing" })}
+        if (existingUser) { return res.json({ success: false, message: "Register No. Already Existing" }) }
 
         const newUser = await ApplicantModel.create(applicantData);
         return res.json({ success: true, user: newUser });
