@@ -475,7 +475,6 @@ app.post('/api/admin/studentstatus', async (req, res) => {
 
 app.put('/api/admin/donar/:id', (req, res) => {
     const donorId = req.params.id;
-    // Handle the PUT request here
     res.send(`Donor ${donorId} updated successfully`);
 });
 
@@ -540,132 +539,85 @@ app.listen(PORT, () => { console.log(`Server is running on port ${PORT}`) });
 
 // ----------------------------------------------------------------------------------------------------------------
 
-// Fetch Students for Application Menu after Login
+// Fetch Student Details for Application Menu after Login
 
 app.get('/api/admin/students', async (req, res) => {
 
     const { registerNo } = req.query;
-    console.log(registerNo);
 
     try {
+
         const student = await ApplicantModel.findOne({ registerNo: registerNo });
-        if (!student) {
-            return res.status(404).send('Student with the specified Register No not found');
-        }
-
+        if (!student) { return res.status(404).send('Student with the specified Register No not found') }
         const acyearData = await AcademicModel.findOne({ active: '1' });
-        if (!acyearData) {
-            return res.status(404).send('Active academic year not found');
-        }
-
+        if (!acyearData) { return res.status(404).send('Active academic year not found'); }
         const currentAcyear = acyearData.acyear;
 
-        // Check if student is Renewal or Fresher
-        let studentType = '';
-        let showOrBlock = 'block'; // Default show
+        let studentType = ''; let showOrBlock = 'block';
 
         const amountExists = await AmountModel.exists({ registerNo: registerNo });
 
         if (amountExists) {
             studentType = 'Renewal';
-
-            // Check in RenewalModel with registerNo and current acyear
             const renewalData = await RenewalModel.findOne({ registerNo: registerNo, acyear: currentAcyear });
-
-            if (renewalData) {
-                showOrBlock = 'block';
-                console.log(`Renewal student data found. Status: ${showOrBlock}`);
-            } else {
-                showOrBlock = 'show';
-                console.log(`Renewal student data not found. Status: ${showOrBlock}`);
-            }
-
+            if (renewalData) { showOrBlock = 'block' }
+            else { showOrBlock = 'show' }
         } else {
             studentType = 'Fresher';
-
-            // Check in ApplicantModel with registerNo and current acyear
             const fresherData = await ApplicantModel.findOne({ registerNo: registerNo, acyear: currentAcyear });
-
-            if (fresherData) {
-                showOrBlock = 'block';
-                console.log(`Fresher student data found. Status: ${showOrBlock}`);
-            } else {
-                showOrBlock = 'show';
-                console.log(`Fresher student data not found. Status: ${showOrBlock}`);
-            }
+            if (fresherData) { showOrBlock = 'block' }
+            else { showOrBlock = 'show' }
         }
 
-        // Calculate previous year scholarship amount
         const [startYear, endYear] = currentAcyear.split('-').map(Number);
         const previousAcyear = `${startYear - 1}-${endYear - 1}`;
 
         const amounts = await AmountModel.find({ registerNo, acyear: previousAcyear });
         const totalScholamt = amounts.reduce((sum, entry) => sum + entry.scholamt, 0);
 
-        // Final response
         const response = {
-            ...student.toObject(),
-            scholamt: totalScholamt,
-            studentType: studentType,
-            showOrBlock: showOrBlock
-        };
-
+            ...student.toObject(), scholamt: totalScholamt, studentType: studentType, showOrBlock: showOrBlock
+        }
         res.json(response);
     }
     catch (err) {
         console.error('Error fetching student data:', err);
         res.status(500).send({ message: 'Internal server error', error: err });
     }
-});
+})
+
 // ----------------------------------------------------------------------------------------------------------------
 
 // For Renewal Apply and also show details for Fresher
 
 app.post("/renewal", upload.single("jamath"), async (req, res) => {
+
     const { registerNo, studentType } = req.body;
 
     const siblingsNo = req.body.siblingsNo && !isNaN(req.body.siblingsNo) ? Number(req.body.siblingsNo) : null;
     const siblingsIncome = req.body.siblingsIncome && !isNaN(req.body.siblingsIncome) ? Number(req.body.siblingsIncome) : null;
 
     const applicantData = {
-        ...req.body,
-        siblingsNo,
-        siblingsIncome,
+        ...req.body, siblingsNo, siblingsIncome,
         jamath: req.file ? req.file.path : null
     };
 
     try {
+
         if (studentType === 'Fresher') {
             const acyearData = await AcademicModel.findOne({ active: '1' });
             if (!acyearData) return res.status(404).send('Active academic year not found');
-
             const [startYear, endYear] = acyearData.acyear.split('-').map(Number);
             const previousAcyear = `${startYear - 1}-${endYear - 1}`;
-
             const missingObject = await ApplicantModel.findOne({ registerNo, acyear: previousAcyear });
-            console.log('Previous Year : ', missingObject);
 
             if (missingObject) {
                 const fieldsToCarryForward = [
-                    'schoolName',
-                    'yearOfPassing',
-                    'percentageOfMarkSchool',
-                    'semPercentage',
-                    'deeniyathPer',
-                    'prevAttendance',
-                    'classAttendancePer',
-                    'classAttendanceRem',
-                    'deeniyathRem',
-                    'semRem',
-                    'arrear',
-                    'attendance',
-                    'scholarship',
-                    'password',
-                    'hostelrep',
-                    'reason'
-                ];
-
-                // Fill missing fields from previous year or schema defaults
+                    'schoolName', 'yearOfPassing', 'percentageOfMarkSchool',
+                    'semPercentage', 'deeniyathPer', 'prevAttendance', 'classAttendancePer',
+                    'classAttendanceRem', 'deeniyathRem', 'semRem', 'arrear', 'attendance',
+                    'scholarship', 'password', 'hostelrep', 'reason'
+                ]
                 fieldsToCarryForward.forEach(field => {
                     if (
                         applicantData[field] === undefined ||
@@ -675,13 +627,11 @@ app.post("/renewal", upload.single("jamath"), async (req, res) => {
                     ) {
                         applicantData[field] = missingObject[field] ??
                             (ApplicantModel.schema.paths[field]?.defaultValue instanceof Function
-                                ? ApplicantModel.schema.paths[field].defaultValue()
-                                : ApplicantModel.schema.paths[field]?.defaultValue ?? ''
-                            );
+                                ? ApplicantModel.schema.paths[field].defaultValue() : ApplicantModel.schema.paths[field]?.defaultValue ?? ''
+                            )
                     }
-                });
+                })
             }
-
             applicantData.acyear = acyearData.acyear;
             const created = await ApplicantModel.create(applicantData);
             return res.status(201).json({ success: true, code: "FRESHER_SUCCESS", user: created });
@@ -690,30 +640,27 @@ app.post("/renewal", upload.single("jamath"), async (req, res) => {
             if (!acyearData) return res.status(404).send('Active academic year not found');
 
             applicantData.acyear = acyearData.acyear;
-
             const fresherExists = await ApplicantModel.findOne({ registerNo, acyear: acyearData.acyear });
+
             if (fresherExists) {
                 return res.status(409).json({ success: false, code: "FRESHER_EXISTS", message: "Already You Applied Fresher Application" });
             }
-
             const renewalExists = await RenewalModel.findOne({ registerNo, acyear: acyearData.acyear });
             if (renewalExists) {
                 return res.status(409).json({ success: false, code: "RENEWAL_EXISTS", message: "Already You Applied Renewal Application" });
             }
-
             const created = await RenewalModel.create(applicantData);
             return res.status(201).json({ success: true, code: "RENEWAL_SUCCESS", user: created });
         }
-
     } catch (error) {
-        console.error("Renewal submission error:", error);
+        console.error("Renewal Submission Error : ", error);
         return res.status(500).json({ success: false, code: "SERVER_ERROR", message: error.message });
     }
-});
+})
 
 // ----------------------------------------------------------------------------------------------------------------
 
-// Fresh Application Submission
+// Fresh Application Submission through Application in Register Menu 
 
 app.post("/fresh", upload.single("jamath"), async (req, res) => {
 
@@ -725,8 +672,7 @@ app.post("/fresh", upload.single("jamath"), async (req, res) => {
         const siblingsIncome = req.body.siblingsIncome && req.body.siblingsIncome !== "undefined" ? Number(req.body.siblingsIncome) : null;
 
         const applicantData = {
-            ...req.body, yearOfPassing, siblingsNo,
-            siblingsIncome,
+            ...req.body, yearOfPassing, siblingsNo, siblingsIncome,
             jamath: req.file ? req.file.path : null,
         };
 
@@ -741,4 +687,6 @@ app.post("/fresh", upload.single("jamath"), async (req, res) => {
         console.error("Error during Fresh Application Submission : ", err);
         return res.status(500).json({ success: false, message: "Internal server error", error: err });
     }
-});
+})
+
+// ----------------------------------------------------------------------------------------------------------------
