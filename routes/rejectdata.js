@@ -106,7 +106,7 @@ router.get('/studstatus', async (req, res) => {
         }
 
         if (applicant) {
-                console.log(applicant)
+                // console.log(applicant)
            
                 let data = await RejectModel.findOne({ registerNo: registerNo, acyear: currAcde.acyear });
                 if (data) {

@@ -547,11 +547,18 @@ app.get('/api/admin/students', async (req, res) => {
 
     try {
 
-        const student = await ApplicantModel.findOne({ registerNo: registerNo });
-        if (!student) { return res.status(404).send('Student with the specified Register No not found') }
         const acyearData = await AcademicModel.findOne({ active: '1' });
         if (!acyearData) { return res.status(404).send('Active academic year not found'); }
         const currentAcyear = acyearData.acyear;
+        let student;
+        if (registerNo) {
+            const fresherData = await ApplicantModel.findOne({ registerNo, acyear: currentAcyear });
+            const renewalData = await RenewalModel.findOne({ registerNo, acyear: currentAcyear });
+            if (fresherData) { student = fresherData }
+            else { student = renewalData }
+        }
+
+        if (!student) { return res.status(404).send('Student with the specified Register No not found') }
 
         let studentType = ''; let showOrBlock = 'block';
 
@@ -571,10 +578,8 @@ app.get('/api/admin/students', async (req, res) => {
 
         const [startYear, endYear] = currentAcyear.split('-').map(Number);
         const previousAcyear = `${startYear - 1}-${endYear - 1}`;
-
         const amounts = await AmountModel.find({ registerNo, acyear: previousAcyear });
         const totalScholamt = amounts.reduce((sum, entry) => sum + entry.scholamt, 0);
-
         const response = {
             ...student.toObject(), scholamt: totalScholamt, studentType: studentType, showOrBlock: showOrBlock
         }
@@ -612,12 +617,13 @@ app.post("/renewal", upload.single("jamath"), async (req, res) => {
             const missingObject = await ApplicantModel.findOne({ registerNo, acyear: previousAcyear });
 
             if (missingObject) {
+
                 const fieldsToCarryForward = [
-                    'schoolName', 'yearOfPassing', 'percentageOfMarkSchool',
-                    'semPercentage', 'deeniyathPer', 'prevAttendance', 'classAttendancePer',
-                    'classAttendanceRem', 'deeniyathRem', 'semRem', 'arrear', 'attendance',
-                    'scholarship', 'password', 'hostelrep', 'reason'
+                    'schoolName', 'yearOfPassing', 'percentageOfMarkSchool', 'semPercentage', 'deeniyathPer',
+                    'prevAttendance', 'classAttendancePer', 'classAttendanceRem', 'deeniyathRem',
+                    'semRem', 'arrear', 'attendance', 'scholarship', 'password', 'hostelrep', 'reason'
                 ]
+
                 fieldsToCarryForward.forEach(field => {
                     if (
                         applicantData[field] === undefined ||
@@ -632,10 +638,13 @@ app.post("/renewal", upload.single("jamath"), async (req, res) => {
                     }
                 })
             }
+
             applicantData.acyear = acyearData.acyear;
             const created = await ApplicantModel.create(applicantData);
             return res.status(201).json({ success: true, code: "FRESHER_SUCCESS", user: created });
+
         } else {
+            
             const acyearData = await AcademicModel.findOne({ active: '1' });
             if (!acyearData) return res.status(404).send('Active academic year not found');
 

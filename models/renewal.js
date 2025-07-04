@@ -1,10 +1,10 @@
-const mongoose = require('mongoose')
+const mongoose = require('mongoose');
 const AutoIncrement = require('mongoose-sequence')(mongoose);
 
 const RenewalSchema = new mongoose.Schema({
     acyear: String,
     reappno: Number,
-    fresherOrRenewal: { type: String, default: 'Renewal'},
+    fresherOrRenewal: { type: String, default: 'Renewal' },
     ugOrPg: String,
     semester: String,
     name: String,
@@ -28,52 +28,24 @@ const RenewalSchema = new mongoose.Schema({
     fatherOccupation: String,
     annualIncome: Number,
     preSemester: Number,
-    semPercentage: {
-        type: Number,
-        default: 0
-    },
-    deeniyathPer: {
-        type: Number,
-        default: 0
-    },
-    prevAttendance: {
-        type: Number,
-        default: 0
-    },
-    classAttendancePer: {
-        type: Number,
-        default: 0
-    },
-    classAttendanceRem: {
-        type: String,
-        default: 'Good'
-    },
-    deeniyathRem: {
-        type: String,
-        default: 'Good'
-    },
-    semRem: {
-        type: String,
-        default: 'Good'
-    },
+    semPercentage: { type: Number, default: 0 },
+    deeniyathPer: { type: Number, default: 0 },
+    prevAttendance: { type: Number, default: 0 },
+    classAttendancePer: { type: Number, default: 0 },
+    classAttendanceRem: { type: String, default: 'Good' },
+    deeniyathRem: { type: String, default: 'Good' },
+    semRem: { type: String, default: 'Good' },
     siblings: String,
     siblingsNo: { type: Number, default: 0 },
     siblingsOccupation: String,
     siblingsIncome: { type: Number, default: 0 },
-    arrear: {
-        type: Number,
-        default: 0
-    },
+    arrear: { type: Number, default: 0 },
     lastCreditedAmt: Number,
     jamath: String,
-    action: {
-        type: Number,
-        default: 0
-    }
-
-})
+    action: { type: Number, default: 0 }
+});
 
 RenewalSchema.plugin(AutoIncrement, { inc_field: 'reappno' });
 
-const RenewalModel = mongoose.model("renewal", RenewalSchema)
-module.exports = RenewalModel
+const RenewalModel = mongoose.model('renewal', RenewalSchema);
+module.exports = RenewalModel;

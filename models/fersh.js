@@ -1,28 +1,16 @@
-const mongoose = require('mongoose')
+const mongoose = require('mongoose');
 const AutoIncrement = require('mongoose-sequence')(mongoose);
 
 const ApplicantSchema = new mongoose.Schema({
     appno: Number,
     acyear: String,
-    fresherOrRenewal: {
-        type: String,
-        default: 'Fresher'
-    },
+    fresherOrRenewal: { type: String, default: 'Fresher' },
     scholarship: String,
     ugOrPg: String,
     semester: String,
-    name: {
-        type: String,
-        required: true
-    },
-    registerNo: {
-        type: String,
-        required: true
-    },
-    dept: {
-        type: String,
-        required: true
-    },
+    name: { type: String, required: true },
+    registerNo: { type: String, required: true },
+    dept: { type: String, required: true },
     section: String,
     religion: String,
     procategory: String,
@@ -32,10 +20,7 @@ const ApplicantSchema = new mongoose.Schema({
     pin: Number,
     specialCategory: String,
     hostel: String,
-    mobileNo: {
-        type: String,
-        required: true
-    },
+    mobileNo: { type: String, required: true },
     aadhar: Number,
     fatherName: String,
     fatherNo: Number,
@@ -45,38 +30,14 @@ const ApplicantSchema = new mongoose.Schema({
     yearOfPassing: { type: Number, default: 0 },
     percentageOfMarkSchool: { type: Number, default: 0 },
     preSemester: String,
-    semPercentage: {
-        type: Number,
-        default: 0
-    },
-    deeniyathPer: {
-        type: Number,
-        default: 0
-    },
-    prevAttendance: {
-        type: Number,
-        default: 0
-    },
-    classAttendancePer: {
-        type: Number,
-        default: 0
-    },
-    classAttendanceRem: {
-        type: String,
-        default: 'Good'
-    },
-    deeniyathRem: {
-        type: String,
-        default: 'Good'
-    },
-    semRem: {
-        type: String,
-        default: 'Good'
-    },
-    arrear: {
-        type: Number,
-        default: 0
-    },
+    semPercentage: { type: Number, default: 0 },
+    deeniyathPer: { type: Number, default: 0 },
+    prevAttendance: { type: Number, default: 0 },
+    classAttendancePer: { type: Number, default: 0 },
+    classAttendanceRem: { type: String, default: 'Good' },
+    deeniyathRem: { type: String, default: 'Good' },
+    semRem: { type: String, default: 'Good' },
+    arrear: { type: Number, default: 0 },
     siblings: String,
     attendance: String,
     deeniyath: String,
@@ -85,21 +46,12 @@ const ApplicantSchema = new mongoose.Schema({
     siblingsNo: { type: Number, default: 0 },
     siblingsOccupation: String,
     siblingsIncome: { type: Number, default: 0 },
-    jamath: {
-        type: String,
-        required: true
-    },
-    action: {
-        type: Number,
-        default: 0
-    },
-    password: {
-        type: String,
-        required: true
-    },
-})
+    jamath: { type: String, required: true },
+    action: { type: Number, default: 0 },
+    password: { type: String, required: true }
+});
 
 ApplicantSchema.plugin(AutoIncrement, { inc_field: 'appno' });
 
-const ApplicantModel = mongoose.model("applicant", ApplicantSchema)
-module.exports = ApplicantModel
+const ApplicantModel = mongoose.model('applicant', ApplicantSchema);
+module.exports = ApplicantModel;
