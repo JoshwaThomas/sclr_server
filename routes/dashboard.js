@@ -16,7 +16,8 @@ router.get('/counts', async (req, res) => {
         }
         const acyear = activeAcademicYear.acyear;
         const totalRenewal = await RenewalModel.countDocuments({ acyear });
-        const totalApplicants = await ApplicantModel.countDocuments({ acyear });
+        const totalFresher = await ApplicantModel.countDocuments({ acyear });
+        const totalApplicants = totalRenewal + totalFresher
         const totalDonars = await DonarModel.countDocuments();
         const ugCount = await ApplicantModel.countDocuments({ acyear, fresherOrRenewal: 'Fresher' });
         const pgCount = await RenewalModel.countDocuments({ acyear, fresherOrRenewal: 'renewal' });
