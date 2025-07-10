@@ -57,46 +57,8 @@ const upload = multer({ storage: storage });
 
 
 
-app.post('/api/admin/student/update', upload.single("jamath"), async (req, res) => {
-    try {
-        const { registerNo } = req.body; // Extract registerNo from request body
-        console.log(registerNo);
-        const classAttendancePer = req.body.classAttendancePer && req.body.classAttendancePer !== "undefined" ? Number(req.body.classAttendancePer) : null;
-        const deeniyathPer = req.body.deeniyathPer && req.body.deeniyathPer !== "undefined" ? Number(req.body.deeniyathPer) : null;
-        const semPercentage = req.body.semPercentage && req.body.semPercentage !== "undefined" ? Number(req.body.semPercentage) : null;
-        const percentageOfMarkSchool = req.body.percentageOfMarkSchool && req.body.percentageOfMarkSchool !== "undefined" ? Number(req.body.percentageOfMarkSchool) : null;
-        const yearOfPassing = req.body.yearOfPassing && req.body.yearOfPassing !== "undefined" ? Number(req.body.yearOfPassing) : null;
-        const siblingsNo = req.body.siblingsNo && !isNaN(req.body.siblingsNo) ? Number(req.body.siblingsNo) : null;
-        const siblingsIncome = req.body.siblingsIncome && !isNaN(req.body.siblingsIncome) ? Number(req.body.siblingsIncome) : null;
 
-        const updatedFields = {
-            ...req.body,
-            classAttendancePer,
-            deeniyathPer,
-            semPercentage,
-            percentageOfMarkSchool,
-            yearOfPassing,
-            siblingsNo,
-            siblingsIncome,
-            jamath: req.file ? req.file.path : null // Update jamath only if a file is uploaded
-        };
-        const academic = await AcademicModel.findOne({ active: 1 });
-        const update = await ApplicantModel.findOneAndUpdate(
-            { registerNo, acyear: academic.acyear }, // Query based on registerNo and academic year
-            { $set: updatedFields }, // Set the updated fields
-            { new: true } // Return the updated document
-        );
 
-        if (update) {
-            res.json({ update, success: true }); // Send success response if update is successful
-        } else {
-            res.status(404).json({ message: 'Student not found' }); // Send error if student not found
-        }
-    } catch (err) {
-        console.log(err); // Log the error for debugging
-        res.status(500).json({ message: 'Failed to update student information', error: err }); // Send error response
-    }
-});
 
 // worked
 // app.post("/fresh", (req, res) => {
@@ -718,6 +680,46 @@ app.get('/checkRegister', async (req, res) => {
     } catch (err) {
         console.error(err);
         return res.status(500).json({ message: 'Server Error' });
+    }
+})
+
+// ----------------------------------------------------------------------------------------------------------------
+
+// Student Details Update for Admin
+
+app.post('/api/admin/student/update', upload.single("jamath"), async (req, res) => {
+
+    try {
+
+        const { registerNo, fresherOrRenewal } = req.body;
+        const classAttendancePer = req.body.classAttendancePer && req.body.classAttendancePer !== "undefined" ? Number(req.body.classAttendancePer) : null;
+        const deeniyathPer = req.body.deeniyathPer && req.body.deeniyathPer !== "undefined" ? Number(req.body.deeniyathPer) : null;
+        const semPercentage = req.body.semPercentage && req.body.semPercentage !== "undefined" ? Number(req.body.semPercentage) : null;
+        const percentageOfMarkSchool = req.body.percentageOfMarkSchool && req.body.percentageOfMarkSchool !== "undefined" ? Number(req.body.percentageOfMarkSchool) : null;
+        const yearOfPassing = req.body.yearOfPassing && req.body.yearOfPassing !== "undefined" ? Number(req.body.yearOfPassing) : null;
+        const siblingsNo = req.body.siblingsNo && !isNaN(req.body.siblingsNo) ? Number(req.body.siblingsNo) : null;
+        const siblingsIncome = req.body.siblingsIncome && !isNaN(req.body.siblingsIncome) ? Number(req.body.siblingsIncome) : null;
+
+        const updatedFields = {
+            ...req.body, classAttendancePer, deeniyathPer, semPercentage,
+            percentageOfMarkSchool, yearOfPassing, siblingsNo, siblingsIncome,
+        };
+
+        if (req.file) { updatedFields.jamath = req.file.path }
+
+        const academic = await AcademicModel.findOne({ active: 1 });
+        const ModelToUse = fresherOrRenewal === 'Fresher' ? ApplicantModel : RenewalModel;
+
+        const update = await ModelToUse.findOneAndUpdate(
+            { registerNo, acyear: academic.acyear }, { $set: updatedFields }, { new: true }
+        )
+
+        if (update) {  res.json({ update, success: true }) } 
+        else { res.status(404).json({ message: 'Student not found' }) }
+        
+    } catch (err) {
+        console.error("Error in updating a Student :", err);
+        res.status(500).json({ message: 'Failed to update student information', error: err });
     }
 })
 

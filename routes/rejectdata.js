@@ -8,7 +8,6 @@ const DonarDataModel = require('../models/donardata');
 const DonarModel = require('../models/donar');
 const Academic = require('../models/academic');
 
-
 router.post("/reject", (req, res) => {
     RejectModel.create(req.body)
         .then(result => res.json({ success: true, result }))
@@ -31,7 +30,7 @@ router.get('/studawardreport', async (req, res) => {
                     totalScholamt: { $sum: '$scholamt' },
                     name: { $first: '$name' },
                     dept: { $first: '$dept' },
-                    amtdate: {$first: '$amtdate'}
+                    amtdate: { $first: '$amtdate' }
                 }
             },
             {
@@ -55,50 +54,13 @@ router.get('/studawardreport', async (req, res) => {
     }
 });
 
-router.get('/status/:registerNo', async (req, res) => {
-    try {
-        const { registerNo } = req.params;
 
-        // Sequentially check each model for data
-        // let data = await AmountModel.findOne({ registerNo });
-        // if (data) {
-        //     return res.json(data);
-        // }
-        const amountData = await AmountModel.find({ registerNo });
-        if (amountData && amountData.length > 0) {
-            const totalScholamt = amountData.reduce((sum, entry) => sum + entry.scholamt, 0);
-            console.log(totalScholamt)
-            return res.json({ ...amountData[0]._doc, totalScholamt });
-        }
-
-        data = await RejectModel.findOne({ registerNo });
-        if (data) {
-            return res.json(data);
-        }
-
-        data = await RenewalModel.findOne({ registerNo });
-        if (data) {
-            return res.json(data);
-        }
-
-        data = await ApplicantModel.findOne({ registerNo });
-        if (data) {
-            return res.json(data);
-        }
-
-        // If no results are found
-        return res.json({ status: 'not exist' });
-    } catch (e) {
-        console.log(e);
-        return res.status(500).json({ status: 'error', message: 'An error occurred while fetching the student data' });
-    }
-});
 
 router.get('/studstatus', async (req, res) => {
     try {
         const { registerNo } = req.query;
 
-        const currAcde = await Academic.findOne( { active: '1' });
+        const currAcde = await Academic.findOne({ active: '1' });
         let applicant = await RenewalModel.findOne({ registerNo: registerNo, acyear: currAcde.acyear });
 
         if (!applicant) {
@@ -106,21 +68,21 @@ router.get('/studstatus', async (req, res) => {
         }
 
         if (applicant) {
-                // console.log(applicant)
-           
-                let data = await RejectModel.findOne({ registerNo: registerNo, acyear: currAcde.acyear });
-                if (data) {
-                    return res.json(data);
-                }
+            // console.log(applicant)
 
-                data = await RenewalModel.findOne({ registerNo: registerNo, acyear: currAcde.acyear });
-                if (data) {
-                    return res.json(data);
-                }
-                data = await ApplicantModel.findOne({ registerNo: registerNo, acyear: currAcde.acyear });
-                if (data) {
-                    return res.json(data);
-                }
+            let data = await RejectModel.findOne({ registerNo: registerNo, acyear: currAcde.acyear });
+            if (data) {
+                return res.json(data);
+            }
+
+            data = await RenewalModel.findOne({ registerNo: registerNo, acyear: currAcde.acyear });
+            if (data) {
+                return res.json(data);
+            }
+            data = await ApplicantModel.findOne({ registerNo: registerNo, acyear: currAcde.acyear });
+            if (data) {
+                return res.json(data);
+            }
         } else {
             return res.json({ success: false, message: 'Applicant does not exist' });
         }
@@ -157,7 +119,7 @@ router.get('/donarletter', async (req, res) => {
                 const donoramt = await AmountModel.find({ scholdonar: donorId1 });
                 console.log('AmountModel data:', donoramt);
 
-                if(donoramt.length > 0) {
+                if (donoramt.length > 0) {
                     const studreg = donoramt[0].registerNo;  // Access the first element's registerNo
                     console.log(`Student reg.no: ${studreg}`);
 
@@ -171,8 +133,8 @@ router.get('/donarletter', async (req, res) => {
                             studname: stud[0].name,
                             studdept: stud[0].dept,
                             studreg: stud[0].registerNo,
-                            donoramtscholamt: donoramt[0].scholamt,  
-                            studmobileNo: stud[0].mobileNo, 
+                            donoramtscholamt: donoramt[0].scholamt,
+                            studmobileNo: stud[0].mobileNo,
                             donar,
                             donoramt,
                             stud
@@ -195,16 +157,92 @@ router.get('/donarletter', async (req, res) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 })
-router.delete('/delete/:registerNo', async (req, res) => {
-    const {registerNo} = req.params
-    const stud = await ApplicantModel.findOne({registerNo})
-    if(stud){
-        const data = await ApplicantModel.deleteOne({registerNo: registerNo})
-        console.log("data",data)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// ----------------------------------------------------------------------------------------------------------------
+
+// Fetch Students Details for Modify Modal for Admin
+
+router.get('/status/:registerNo', async (req, res) => {
+
+    const { registerNo } = req.params;
+
+    try {
+
+        // const amountData = await AmountModel.find({ registerNo });
+        // if (amountData && amountData.length > 0) {
+        //     const totalScholamt = amountData.reduce((sum, entry) => sum + entry.scholamt, 0);
+        //     return res.json({ ...amountData[0]._doc, totalScholamt });
+        // }
+
+        const acyearData = await Academic.findOne({ active: '1' });
+        if (!acyearData) { return res.status(404).send('Active academic year not found'); }
+        const currentAcyear = acyearData.acyear;
+
+        // data = await RejectModel.findOne({ registerNo });
+        // if (data) { return res.json(data) }
+
+        data = await RenewalModel.findOne({ registerNo, acyear: currentAcyear });
+        if (data) { return res.json(data) }
+
+        data = await ApplicantModel.findOne({ registerNo, acyear: currentAcyear });
+        if (data) { return res.json(data) }
+
+        return res.json({ status: 'Not Exist' });
+
+    } catch (error) {
+        console.log("Error in Fetching Students Info for Modify : ", error);
+        return res.status(500).json({ status: 'error', message: 'An error occurred while fetching the student data' });
     }
-    res.status(200).json({ message: 'Data Deleted successfully.' });
-    console.log("stud",stud)
+})
+
+// ----------------------------------------------------------------------------------------------------------------
+
+// Delete the Current Academic Application for Admin
+
+router.delete('/delete/:registerNo', async (req, res) => {
+
+    try {
+
+        const { registerNo } = req.params;
+        const acyearData = await Academic.findOne({ active: '1' });
+        if (!acyearData) { return res.status(404).json({ message: 'Active academic year not found' }) }
+        const currentAcyear = acyearData.acyear;
+
+        let student = await ApplicantModel.findOne({ registerNo, acyear: currentAcyear });
+        let modelUsed = null;
+
+        if (student) { modelUsed = ApplicantModel }
+        else {
+            student = await RenewalModel.findOne({ registerNo, acyear: currentAcyear });
+            if (student) modelUsed = RenewalModel;
+        }
+
+        if (!student) { return res.status(404).json({ message: 'Student not found' }) }
+        await modelUsed.deleteOne({ registerNo, acyear: currentAcyear });
+        return res.status(200).json({ message: 'Student record deleted successfully.' });
+
+    } catch (error) {
+        console.error('Error deleting student : ', error);
+        return res.status(500).json({ message: 'Internal Server Error', error });
+    }
 })
 
 module.exports = router;
-
