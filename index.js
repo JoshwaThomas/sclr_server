@@ -280,18 +280,20 @@ app.put("/freshdeeniyathUpdate", async (req, res) => {
             const remark = remarks[registerNo];
 
             // Check if the registerNo exists in RenewalModel
-            const renewalUser = await RenewalModel.findOne({registerNo});
+            const academic = await AcademicModel.findOne({active: '1'});
+
+            const renewalUser = await RenewalModel.findOne({registerNo,acyear: academic.acyear});
             if (renewalUser) {
                 // Update RenewalModel only
                 return RenewalModel.findOneAndUpdate(
-                    {registerNo},
+                    {registerNo,acyear: academic.acyear},
                     {deeniyathPer, deeniyathRem: remark},
                     {new: true}
                 );
             } else {
                 // If not in RenewalModel, update ApplicantModel
                 return ApplicantModel.findOneAndUpdate(
-                    {registerNo},
+                    {registerNo,acyear: academic.acyear},
                     {deeniyathPer, deeniyathRem: remark},
                     {new: true}
                 );
