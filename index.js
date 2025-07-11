@@ -52,7 +52,7 @@ const storage = multer.diskStorage({
         cb(null, uniqueSuffix + file.originalname);
     },
 });
-const upload = multer({ storage: storage });
+const upload = multer({storage: storage});
 
 
 
@@ -121,10 +121,10 @@ const upload = multer({ storage: storage });
 // });
 
 app.post("/api/forgotpass", async (req, res) => {
-    const { registerNo, mobileNo, aadhar, password } = req.body;
+    const {registerNo, mobileNo, aadhar, password} = req.body;
     console.log('front: ', registerNo, mobileNo, aadhar, password)
     try {
-        const register = await ApplicantModel.findOne({ registerNo });
+        const register = await ApplicantModel.findOne({registerNo});
 
         if (register) {
             console.log(register)
@@ -137,86 +137,86 @@ app.post("/api/forgotpass", async (req, res) => {
                     console.log("Aadhar Number matched", register.aadhar)
                     // const hashedPassword = bcrypt.hashSync(password, 10);
                     await ApplicantModel.findOneAndUpdate(
-                        { registerNo },
-                        { password: password }
+                        {registerNo},
+                        {password: password}
                     );
-                    res.status(200).json({ success: true, message: "Password updated successfully!" });
+                    res.status(200).json({success: true, message: "Password updated successfully!"});
                 } else {
-                    res.status(200).json({ message: 'Aadhar number mismatched' });
+                    res.status(200).json({message: 'Aadhar number mismatched'});
                 }
             } else {
-                res.status(200).json({ message: 'Mobile number mismatched' });
+                res.status(200).json({message: 'Mobile number mismatched'});
             }
         } else {
-            res.status(200).json({ message: 'Register number not found' });
+            res.status(200).json({message: 'Register number not found'});
         }
     } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
+        res.status(500).json({success: false, error: error.message});
     }
 });
 
 app.post("freshaction/:registerNo", (req, res) => {
-    const { registerNo } = req.body;
-    ApplicantModel.findOneAndUpdate({ registerNo }, req.body, { new: true })
-        .then(users => res.json({ success: true, users }))
-        .catch(err => res.json({ success: false, error: err }));
+    const {registerNo} = req.body;
+    ApplicantModel.findOneAndUpdate({registerNo}, req.body, {new: true})
+        .then(users => res.json({success: true, users}))
+        .catch(err => res.json({success: false, error: err}));
 
 })
 app.post("/api/admin/action", async (req, res) => {
-    const { registerNo } = req.body;
+    const {registerNo} = req.body;
 
     try {
-        const acyearData = await AcademicModel.findOne({ active: '1' })
+        const acyearData = await AcademicModel.findOne({active: '1'})
         const curAcyear = acyearData.acyear;
         console.log(curAcyear)
-        const register = await RenewalModel.findOne({ registerNo, acyear: curAcyear });
+        const register = await RenewalModel.findOne({registerNo, acyear: curAcyear});
         console.log(register)
         if (!register) {
             const result = await ApplicantModel.findOneAndUpdate(
-                { registerNo },
-                { action: '1' },
-                { new: true }
+                {registerNo},
+                {action: '1'},
+                {new: true}
             );
-            return res.json({ success: true, result });
+            return res.json({success: true, result});
         } else {
             const result = await RenewalModel.findOneAndUpdate(
-                { registerNo, acyear: curAcyear },
-                { action: '1' },
-                { new: true }
+                {registerNo, acyear: curAcyear},
+                {action: '1'},
+                {new: true}
             );
             console.log('Updated Renewal Record:', result);
-            return res.json({ success: true, result });
+            return res.json({success: true, result});
         }
     } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
+        res.status(500).json({success: false, error: error.message});
     }
 })
 app.post("/api/admin/actionreject", async (req, res) => {
-    const { registerNo } = req.body;
+    const {registerNo} = req.body;
     try {
-        const acyearData = await AcademicModel.findOne({ active: '1' })
+        const acyearData = await AcademicModel.findOne({active: '1'})
         const curAcyear = acyearData.acyear;
         console.log(curAcyear)
-        const register = await RenewalModel.findOne({ registerNo, acyear: curAcyear });
+        const register = await RenewalModel.findOne({registerNo, acyear: curAcyear});
 
         if (!register) {
             const result = await ApplicantModel.findOneAndUpdate(
-                { registerNo },
-                { action: '2' },
-                { new: true }
+                {registerNo},
+                {action: '2'},
+                {new: true}
             );
-            return res.json({ success: true, result });
+            return res.json({success: true, result});
         } else {
             const result = await RenewalModel.findOneAndUpdate(
-                { registerNo, acyear: curAcyear },
-                { action: '1' },
-                { new: true }
+                {registerNo, acyear: curAcyear},
+                {action: '1'},
+                {new: true}
             );
             console.log('Updated Renewal Record:', result);
-            return res.json({ success: true, result });
+            return res.json({success: true, result});
         }
     } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
+        res.status(500).json({success: false, error: error.message});
     }
 })
 
@@ -271,80 +271,44 @@ app.get("/fresh", (req, res) => {
 //     }
 // });
 
-app.put("/freshattSfmUpdate", async (req, res) => {
-    const { updates, remarks } = req.body;
-
-    try {
-        const updatePromises = Object.entries(updates).map(async ([registerNo, attendanceData]) => {
-            const { prevAttendance, classAttendancePer } = attendanceData;
-            const remark = remarks[registerNo];
-
-            // Check if the registerNo exists in RenewalModel
-
-            const renewalUser = await RenewalModel.findOne({ registerNo });
-            if (renewalUser) {
-                // Update RenewalModel only
-                return RenewalModel.findOneAndUpdate(
-                    { registerNo },
-                    { prevAttendance, classAttendancePer, classAttendanceRem: remark },
-                    { new: true }
-                );
-            } else {
-                // If not in RenewalModel, update ApplicantModel
-                return ApplicantModel.findOneAndUpdate(
-                    { registerNo },
-                    { prevAttendance, classAttendancePer, classAttendanceRem: remark },
-                    { new: true }
-                );
-            }
-        });
-
-        await Promise.all(updatePromises);
-
-        res.json({ success: true });
-    } catch (err) {
-        console.error('Error updating attendance:', err);
-        res.status(500).json({ success: false, error: err.message });
-    }
-});
 
 app.put("/freshdeeniyathUpdate", async (req, res) => {
-    const { updates, remarks } = req.body;
+    const {updates, remarks} = req.body;
 
     try {
         const updatePromises = Object.entries(updates).map(async ([registerNo, deeniyathPer]) => {
             const remark = remarks[registerNo];
 
             // Check if the registerNo exists in RenewalModel
-            const renewalUser = await RenewalModel.findOne({ registerNo });
+            const renewalUser = await RenewalModel.findOne({registerNo});
             if (renewalUser) {
                 // Update RenewalModel only
                 return RenewalModel.findOneAndUpdate(
-                    { registerNo },
-                    { deeniyathPer, deeniyathRem: remark },
-                    { new: true }
+                    {registerNo},
+                    {deeniyathPer, deeniyathRem: remark},
+                    {new: true}
                 );
             } else {
                 // If not in RenewalModel, update ApplicantModel
                 return ApplicantModel.findOneAndUpdate(
-                    { registerNo },
-                    { deeniyathPer, deeniyathRem: remark },
-                    { new: true }
+                    {registerNo},
+                    {deeniyathPer, deeniyathRem: remark},
+                    {new: true}
                 );
             }
         });
 
         await Promise.all(updatePromises);
 
-        res.json({ success: true });
+        res.json({success: true});
     } catch (err) {
         console.error('Error updating attendance:', err);
-        res.status(500).json({ success: false, error: err.message });
+        res.status(500).json({success: false, error: err.message});
     }
 });
 
 app.put("/freshsemUpdate", async (req, res) => {
-    const { updates, remarks, arrears } = req.body;
+    const {updates, remarks, arrears} = req.body;
 
     try {
         const updatePromises = Object.entries(updates).map(async ([registerNo, semPercentage]) => {
@@ -352,30 +316,30 @@ app.put("/freshsemUpdate", async (req, res) => {
             const arrear = arrears[registerNo];
 
             // Check if the registerNo exists in RenewalModel
-            const renewalUser = await RenewalModel.findOne({ registerNo });
+            const renewalUser = await RenewalModel.findOne({registerNo});
             if (renewalUser) {
                 // Update RenewalModel
                 return RenewalModel.findOneAndUpdate(
-                    { registerNo },
-                    { semPercentage, semRem: remark, arrear },
-                    { new: true }
+                    {registerNo},
+                    {semPercentage, semRem: remark, arrear},
+                    {new: true}
                 );
             } else {
                 // If not in RenewalModel, update ApplicantModel
                 return ApplicantModel.findOneAndUpdate(
-                    { registerNo },
-                    { semPercentage, semRem: remark, arrear },
-                    { new: true }
+                    {registerNo},
+                    {semPercentage, semRem: remark, arrear},
+                    {new: true}
                 );
             }
         });
 
         await Promise.all(updatePromises);
 
-        res.json({ success: true });
+        res.json({success: true});
     } catch (err) {
         console.error('Error updating attendance:', err);
-        res.status(500).json({ success: false, error: err.message });
+        res.status(500).json({success: false, error: err.message});
     }
 });
 
@@ -393,10 +357,10 @@ app.get("/renewal", (req, res) => {
 })
 app.get('/in-progress', async (req, res) => {
     try {
-        const inProgressApplicants = await ApplicantModel.find({ action: 0 });
+        const inProgressApplicants = await ApplicantModel.find({action: 0});
         res.json(inProgressApplicants);
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({message: error.message});
     }
 });
 
@@ -405,29 +369,29 @@ app.get('/in-progress', async (req, res) => {
 app.get('/api/admin/studentdata', async (req, res) => {
     try {
         const students = await ApplicantModel.find();
-        const academic = await AcademicModel.findOne({ active: '1' });
-        res.json({ students, academic });
+        const academic = await AcademicModel.findOne({active: '1'});
+        res.json({students, academic});
     } catch (err) {
         console.log('error', err);
-        res.status(500).json({ message: 'Internal Server Error' });
+        res.status(500).json({message: 'Internal Server Error'});
     }
 });
 
 
 app.post('/api/admin/studentstatus', async (req, res) => {
-    const { registerNo, mobileNo } = req.body;
+    const {registerNo, mobileNo} = req.body;
 
     try {
-        const status = await ApplicantModel.findOne({ registerNo: registerNo });
+        const status = await ApplicantModel.findOne({registerNo: registerNo});
 
         if (status) {
             if (status.mobileNo === mobileNo) {
-                res.json({ status: "exist", action: status.action });
+                res.json({status: "exist", action: status.action});
             } else {
-                res.json({ status: "wrong password" });
+                res.json({status: "wrong password"});
             }
         } else {
-            res.json({ status: 'not exist' });
+            res.json({status: 'not exist'});
         }
     } catch (e) {
         console.log(e);
@@ -497,7 +461,7 @@ app.put('/api/admin/donar/:id', (req, res) => {
 
 const PORT = process.env.PORT || 3006;
 
-app.listen(PORT, () => { console.log(`Server is running on port ${PORT}`) });
+app.listen(PORT, () => {console.log(`Server is running on port ${PORT}`)});
 
 // ----------------------------------------------------------------------------------------------------------------
 
@@ -505,50 +469,50 @@ app.listen(PORT, () => { console.log(`Server is running on port ${PORT}`) });
 
 app.get('/api/admin/students', async (req, res) => {
 
-    const { registerNo } = req.query;
+    const {registerNo} = req.query;
 
     try {
 
-        const acyearData = await AcademicModel.findOne({ active: '1' });
-        if (!acyearData) { return res.status(404).send('Active academic year not found'); }
+        const acyearData = await AcademicModel.findOne({active: '1'});
+        if (!acyearData) {return res.status(404).send('Active academic year not found');}
         const currentAcyear = acyearData.acyear;
         const [startYear, endYear] = currentAcyear.split('-').map(Number);
         const previousAcyear = `${startYear - 1}-${endYear - 1}`;
-        const amounts = await AmountModel.find({ registerNo, acyear: previousAcyear });
+        const amounts = await AmountModel.find({registerNo, acyear: previousAcyear});
         const totalScholamt = amounts.reduce((sum, entry) => sum + entry.scholamt, 0);
 
         let student;
 
         if (registerNo) {
-            const fresherData = await ApplicantModel.findOne({ registerNo, acyear: currentAcyear });
-            const renewalData = await RenewalModel.findOne({ registerNo, acyear: currentAcyear });
+            const fresherData = await ApplicantModel.findOne({registerNo, acyear: currentAcyear});
+            const renewalData = await RenewalModel.findOne({registerNo, acyear: currentAcyear});
             if (fresherData || renewalData) {
                 student = (fresherData || renewalData).toObject();
             }
             else {
-                const prevfresherData = await ApplicantModel.findOne({ registerNo, acyear: previousAcyear });
-                const prevrenewalData = await RenewalModel.findOne({ registerNo, acyear: previousAcyear });
-                if (prevfresherData) { student = { ...prevfresherData.toObject(), semester: '' } }
-                else { student = { ...prevrenewalData.toObject(), semester: '' } }
+                const prevfresherData = await ApplicantModel.findOne({registerNo, acyear: previousAcyear});
+                const prevrenewalData = await RenewalModel.findOne({registerNo, acyear: previousAcyear});
+                if (prevfresherData) {student = {...prevfresherData.toObject(), semester: ''}}
+                else {student = {...prevrenewalData.toObject(), semester: ''}}
             }
         }
 
-        if (!student) { return res.status(404).send('Student with the specified Register No not found') }
+        if (!student) {return res.status(404).send('Student with the specified Register No not found')}
 
         let studentType = ''; let showOrBlock = 'block';
 
-        const amountExists = await AmountModel.exists({ registerNo: registerNo });
+        const amountExists = await AmountModel.exists({registerNo: registerNo});
 
         if (amountExists) {
             studentType = 'Renewal';
-            const renewalData = await RenewalModel.findOne({ registerNo: registerNo, acyear: currentAcyear });
-            if (renewalData) { showOrBlock = 'block' }
-            else { showOrBlock = 'show' }
+            const renewalData = await RenewalModel.findOne({registerNo: registerNo, acyear: currentAcyear});
+            if (renewalData) {showOrBlock = 'block'}
+            else {showOrBlock = 'show'}
         } else {
             studentType = 'Fresher';
-            const fresherData = await ApplicantModel.findOne({ registerNo: registerNo, acyear: currentAcyear });
-            if (fresherData) { showOrBlock = 'block' }
-            else { showOrBlock = 'show' }
+            const fresherData = await ApplicantModel.findOne({registerNo: registerNo, acyear: currentAcyear});
+            if (fresherData) {showOrBlock = 'block'}
+            else {showOrBlock = 'show'}
         }
 
         const response = {
@@ -558,7 +522,7 @@ app.get('/api/admin/students', async (req, res) => {
     }
     catch (err) {
         console.error('Error fetching Student Data : ', err);
-        res.status(500).send({ message: 'Internal server error', error: err });
+        res.status(500).send({message: 'Internal server error', error: err});
     }
 })
 
@@ -568,10 +532,10 @@ app.get('/api/admin/students', async (req, res) => {
 
 app.post("/renewal", upload.single("jamath"), async (req, res) => {
 
-    const { registerNo, studentType } = req.body;
+    const {registerNo, studentType} = req.body;
     const siblingsNo = req.body.siblingsNo && !isNaN(req.body.siblingsNo) ? Number(req.body.siblingsNo) : null;
     const siblingsIncome = req.body.siblingsIncome && !isNaN(req.body.siblingsIncome) ? Number(req.body.siblingsIncome) : null;
-    const applicantData = { ...req.body, siblingsNo, siblingsIncome, jamath: req.file ? req.file.path : null };
+    const applicantData = {...req.body, siblingsNo, siblingsIncome, jamath: req.file ? req.file.path : null};
 
     try {
 
@@ -591,11 +555,11 @@ app.post("/renewal", upload.single("jamath"), async (req, res) => {
         })
 
         if (studentType === 'Fresher') {
-            const acyearData = await AcademicModel.findOne({ active: '1' });
+            const acyearData = await AcademicModel.findOne({active: '1'});
             if (!acyearData) return res.status(404).send('Active academic year not found');
             const [startYear, endYear] = acyearData.acyear.split('-').map(Number);
             const previousAcyear = `${startYear - 1}-${endYear - 1}`;
-            const missingObject = await ApplicantModel.findOne({ registerNo, acyear: previousAcyear });
+            const missingObject = await ApplicantModel.findOne({registerNo, acyear: previousAcyear});
 
             if (missingObject) {
 
@@ -622,29 +586,29 @@ app.post("/renewal", upload.single("jamath"), async (req, res) => {
 
             applicantData.acyear = acyearData.acyear;
             const created = await ApplicantModel.create(applicantData);
-            return res.status(201).json({ success: true, code: "FRESHER_SUCCESS", user: created });
+            return res.status(201).json({success: true, code: "FRESHER_SUCCESS", user: created});
 
         } else {
 
-            const acyearData = await AcademicModel.findOne({ active: '1' });
+            const acyearData = await AcademicModel.findOne({active: '1'});
             if (!acyearData) return res.status(404).send('Active academic year not found');
 
             applicantData.acyear = acyearData.acyear;
-            const fresherExists = await ApplicantModel.findOne({ registerNo, acyear: acyearData.acyear });
+            const fresherExists = await ApplicantModel.findOne({registerNo, acyear: acyearData.acyear});
 
             if (fresherExists) {
-                return res.status(409).json({ success: false, code: "FRESHER_EXISTS", message: "Already You Applied Fresher Application" });
+                return res.status(409).json({success: false, code: "FRESHER_EXISTS", message: "Already You Applied Fresher Application"});
             }
-            const renewalExists = await RenewalModel.findOne({ registerNo, acyear: acyearData.acyear });
+            const renewalExists = await RenewalModel.findOne({registerNo, acyear: acyearData.acyear});
             if (renewalExists) {
-                return res.status(409).json({ success: false, code: "RENEWAL_EXISTS", message: "Already You Applied Renewal Application" });
+                return res.status(409).json({success: false, code: "RENEWAL_EXISTS", message: "Already You Applied Renewal Application"});
             }
             const created = await RenewalModel.create(applicantData);
-            return res.status(201).json({ success: true, code: "RENEWAL_SUCCESS", user: created });
+            return res.status(201).json({success: true, code: "RENEWAL_SUCCESS", user: created});
         }
     } catch (error) {
         console.error("Renewal Submission Error : ", error);
-        return res.status(500).json({ success: false, code: "SERVER_ERROR", message: error.message });
+        return res.status(500).json({success: false, code: "SERVER_ERROR", message: error.message});
     }
 })
 
@@ -656,7 +620,7 @@ app.post("/fresh", upload.single("jamath"), async (req, res) => {
 
     try {
 
-        const { registerNo } = req.body;
+        const {registerNo} = req.body;
         const yearOfPassing = req.body.yearOfPassing && req.body.yearOfPassing !== "undefined" ? Number(req.body.yearOfPassing) : null;
         const siblingsNo = req.body.siblingsNo && req.body.siblingsNo !== "undefined" ? Number(req.body.siblingsNo) : null;
         const siblingsIncome = req.body.siblingsIncome && req.body.siblingsIncome !== "undefined" ? Number(req.body.siblingsIncome) : null;
@@ -666,16 +630,16 @@ app.post("/fresh", upload.single("jamath"), async (req, res) => {
             jamath: req.file ? req.file.path : null,
         };
 
-        const existingUser = await ApplicantModel.findOne({ registerNo });
+        const existingUser = await ApplicantModel.findOne({registerNo});
 
-        if (existingUser) { return res.json({ success: false, message: "Register No. Already Existing" }) }
+        if (existingUser) {return res.json({success: false, message: "Register No. Already Existing"})}
 
         const newUser = await ApplicantModel.create(applicantData);
-        return res.json({ success: true, user: newUser });
+        return res.json({success: true, user: newUser});
 
     } catch (err) {
         console.error("Error during Fresh Application Submission : ", err);
-        return res.status(500).json({ success: false, message: "Internal server error", error: err });
+        return res.status(500).json({success: false, message: "Internal server error", error: err});
     }
 })
 
@@ -685,15 +649,15 @@ app.post("/fresh", upload.single("jamath"), async (req, res) => {
 
 app.get('/checkRegister', async (req, res) => {
 
-    const { registerNumber } = req.query;
+    const {registerNumber} = req.query;
 
     try {
-        const existingApplicant = await ApplicantModel.findOne({ registerNo: registerNumber });
-        if (existingApplicant) { return res.json({ message: 'ExistingStudent' }) }
-        else { return res.json({ message: 'NewStudent' }) }
+        const existingApplicant = await ApplicantModel.findOne({registerNo: registerNumber});
+        if (existingApplicant) {return res.json({message: 'ExistingStudent'})}
+        else {return res.json({message: 'NewStudent'})}
     } catch (err) {
         console.error(err);
-        return res.status(500).json({ message: 'Server Error' });
+        return res.status(500).json({message: 'Server Error'});
     }
 })
 
@@ -705,7 +669,7 @@ app.post('/api/admin/student/update', upload.single("jamath"), async (req, res) 
 
     try {
 
-        const { registerNo, fresherOrRenewal } = req.body;
+        const {registerNo, fresherOrRenewal} = req.body;
         const classAttendancePer = req.body.classAttendancePer && req.body.classAttendancePer !== "undefined" ? Number(req.body.classAttendancePer) : null;
         const deeniyathPer = req.body.deeniyathPer && req.body.deeniyathPer !== "undefined" ? Number(req.body.deeniyathPer) : null;
         const semPercentage = req.body.semPercentage && req.body.semPercentage !== "undefined" ? Number(req.body.semPercentage) : null;
@@ -719,22 +683,70 @@ app.post('/api/admin/student/update', upload.single("jamath"), async (req, res) 
             percentageOfMarkSchool, yearOfPassing, siblingsNo, siblingsIncome,
         };
 
-        if (req.file) { updatedFields.jamath = req.file.path }
+        if (req.file) {updatedFields.jamath = req.file.path}
 
-        const academic = await AcademicModel.findOne({ active: 1 });
+        const academic = await AcademicModel.findOne({active: 1});
         const ModelToUse = fresherOrRenewal === 'Fresher' ? ApplicantModel : RenewalModel;
 
         const update = await ModelToUse.findOneAndUpdate(
-            { registerNo, acyear: academic.acyear }, { $set: updatedFields }, { new: true }
+            {registerNo, acyear: academic.acyear}, {$set: updatedFields}, {new: true}
         )
 
-        if (update) { res.json({ update, success: true }) }
-        else { res.status(404).json({ message: 'Student not found' }) }
+        if (update) {res.json({update, success: true})}
+        else {res.status(404).json({message: 'Student not found'})}
 
     } catch (err) {
         console.error("Error in updating a Student :", err);
-        res.status(500).json({ message: 'Failed to update student information', error: err });
+        res.status(500).json({message: 'Failed to update student information', error: err});
     }
 })
 
 // ----------------------------------------------------------------------------------------------------------------
+
+// For AIDED , SFM , SFW attendance
+
+
+app.put("/freshattSfmUpdate", async (req, res) => {
+    const {updates, remarks} = req.body;
+
+    try {
+        const updatePromises = Object.entries(updates).map(async ([registerNo, attendanceData]) => {
+            const {prevAttendance, classAttendancePer} = attendanceData;
+            const remark = remarks[registerNo];
+
+            // Check if the registerNo exists in RenewalModel
+            const academic = await AcademicModel.findOne({active: '1'});
+            // console.log(academic.acyear)
+
+            const renewalUser = await RenewalModel.findOne({
+                registerNo, acyear: academic.acyear
+            });
+
+            // console.log(renewalUser)
+
+
+            if (renewalUser) {
+                // Update RenewalModel only
+                return RenewalModel.findOneAndUpdate(
+                    {registerNo, acyear: academic.acyear},
+                    {prevAttendance, classAttendancePer, classAttendanceRem: remark},
+                    {new: true}
+                );
+            } else {
+                // If not in RenewalModel, update ApplicantModel
+                return ApplicantModel.findOneAndUpdate(
+                    {registerNo, acyear: academic.acyear},
+                    {prevAttendance, classAttendancePer, classAttendanceRem: remark},
+                    {new: true}
+                );
+            }
+        });
+
+        await Promise.all(updatePromises);
+
+        res.json({success: true});
+    } catch (err) {
+        console.error('Error updating attendance:', err);
+        res.status(500).json({success: false, error: err.message});
+    }
+});
