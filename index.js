@@ -282,18 +282,18 @@ app.put("/freshdeeniyathUpdate", async (req, res) => {
             // Check if the registerNo exists in RenewalModel
             const academic = await AcademicModel.findOne({active: '1'});
 
-            const renewalUser = await RenewalModel.findOne({registerNo,acyear: academic.acyear});
+            const renewalUser = await RenewalModel.findOne({registerNo, acyear: academic.acyear});
             if (renewalUser) {
                 // Update RenewalModel only
                 return RenewalModel.findOneAndUpdate(
-                    {registerNo,acyear: academic.acyear},
+                    {registerNo, acyear: academic.acyear},
                     {deeniyathPer, deeniyathRem: remark},
                     {new: true}
                 );
             } else {
                 // If not in RenewalModel, update ApplicantModel
                 return ApplicantModel.findOneAndUpdate(
-                    {registerNo,acyear: academic.acyear},
+                    {registerNo, acyear: academic.acyear},
                     {deeniyathPer, deeniyathRem: remark},
                     {new: true}
                 );
@@ -318,18 +318,21 @@ app.put("/freshsemUpdate", async (req, res) => {
             const arrear = arrears[registerNo];
 
             // Check if the registerNo exists in RenewalModel
-            const renewalUser = await RenewalModel.findOne({registerNo});
+            const academic = await AcademicModel.findOne({active: '1'});
+            acyear: academic.acyear
+
+            const renewalUser = await RenewalModel.findOne({registerNo,acyear:academic.acyear});
             if (renewalUser) {
                 // Update RenewalModel
                 return RenewalModel.findOneAndUpdate(
-                    {registerNo},
+                    {registerNo, acyear: academic.acyear },
                     {semPercentage, semRem: remark, arrear},
                     {new: true}
                 );
             } else {
                 // If not in RenewalModel, update ApplicantModel
                 return ApplicantModel.findOneAndUpdate(
-                    {registerNo},
+                    {registerNo , acyear: academic.acyear},
                     {semPercentage, semRem: remark, arrear},
                     {new: true}
                 );
@@ -718,6 +721,7 @@ app.put("/freshattSfmUpdate", async (req, res) => {
 
             // Check if the registerNo exists in RenewalModel
             const academic = await AcademicModel.findOne({active: '1'});
+
             // console.log(academic.acyear)
 
             const renewalUser = await RenewalModel.findOne({
