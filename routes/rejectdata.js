@@ -56,41 +56,7 @@ router.get('/studawardreport', async (req, res) => {
 
 
 
-router.get('/studstatus', async (req, res) => {
-    try {
-        const { registerNo } = req.query;
 
-        const currAcde = await Academic.findOne({ active: '1' });
-        let applicant = await RenewalModel.findOne({ registerNo: registerNo, acyear: currAcde.acyear });
-
-        if (!applicant) {
-            applicant = await ApplicantModel.findOne({ registerNo: registerNo, acyear: currAcde.acyear });
-        }
-
-        if (applicant) {
-            // console.log(applicant)
-
-            let data = await RejectModel.findOne({ registerNo: registerNo, acyear: currAcde.acyear });
-            if (data) {
-                return res.json(data);
-            }
-
-            data = await RenewalModel.findOne({ registerNo: registerNo, acyear: currAcde.acyear });
-            if (data) {
-                return res.json(data);
-            }
-            data = await ApplicantModel.findOne({ registerNo: registerNo, acyear: currAcde.acyear });
-            if (data) {
-                return res.json(data);
-            }
-        } else {
-            return res.json({ success: false, message: 'Applicant does not exist' });
-        }
-    } catch (e) {
-        console.log(e);
-        return res.status(500).json({ status: 'error', message: 'An error occurred while fetching the student data' });
-    }
-});
 router.get('/donarletter', async (req, res) => {
     try {
         const { name } = req.query;
@@ -244,5 +210,42 @@ router.delete('/delete/:registerNo', async (req, res) => {
         return res.status(500).json({ message: 'Internal Server Error', error });
     }
 })
+
+// ----------------------------------------------------------------------------------------------------------------
+
+// To dispaly the Details for Current Academic Year in Student Dashboard
+
+router.get('/studstatus', async (req, res) => {
+
+    const { registerNo } = req.query;
+
+    try {
+
+        const currAcde = await Academic.findOne({ active: '1' });
+        let applicant = await RenewalModel.findOne({ registerNo: registerNo, acyear: currAcde.acyear });
+
+        if (!applicant) {
+            applicant = await ApplicantModel.findOne({ registerNo: registerNo, acyear: currAcde.acyear });
+        }
+
+        if (applicant) {
+
+            let data = await RejectModel.findOne({ registerNo: registerNo, acyear: currAcde.acyear });
+            if (data) { return res.json(data) }
+
+            data = await RenewalModel.findOne({ registerNo: registerNo, acyear: currAcde.acyear });
+            if (data) { return res.json(data) }
+
+            data = await ApplicantModel.findOne({ registerNo: registerNo, acyear: currAcde.acyear });
+            if (data) { return res.json(data) }
+
+        } else {
+            return res.json({ success: false, message: 'Applicant does not exist' });
+        }
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ status: 'error', message: 'An error occurred while fetching the student data' });
+    }
+});
 
 module.exports = router;

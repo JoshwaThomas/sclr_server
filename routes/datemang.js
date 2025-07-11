@@ -2,12 +2,20 @@ const express = require('express');
 const router = express.Router();
 const DateModel = require('../models/date')
 
+// ----------------------------------------------------------------------------------------------------------------
+
+// To Upsert Date for Application
+
 router.post('/dates', async (req, res) => {
     const { startDate, endDate } = req.body;
-    const dateRange = new DateModel({ startDate, endDate });
-    await dateRange.save();
-    res.send('Dates saved');
+    await DateModel.findOneAndUpdate({},
+        { startDate, endDate }, { upsert: true });
+    res.send('Dates Saved');
 });
+
+// ----------------------------------------------------------------------------------------------------------------
+
+// To fetch Dates for Admin
 
 router.get('/dates', async (req, res) => {
     const dateRange = await DateModel.findOne().sort({ _id: -1 });

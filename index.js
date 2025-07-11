@@ -523,14 +523,13 @@ app.get('/api/admin/students', async (req, res) => {
             const fresherData = await ApplicantModel.findOne({ registerNo, acyear: currentAcyear });
             const renewalData = await RenewalModel.findOne({ registerNo, acyear: currentAcyear });
             if (fresherData || renewalData) {
-                if (fresherData) { student = fresherData }
-                else { student = renewalData }
+                student = (fresherData || renewalData).toObject();
             }
             else {
-                const fresherData = await ApplicantModel.findOne({ registerNo, acyear: previousAcyear });
-                const renewalData = await RenewalModel.findOne({ registerNo, acyear: previousAcyear });
-                if (fresherData) { student = fresherData; }
-                else { student = renewalData; }
+                const prevfresherData = await ApplicantModel.findOne({ registerNo, acyear: previousAcyear });
+                const prevrenewalData = await RenewalModel.findOne({ registerNo, acyear: previousAcyear });
+                if (prevfresherData) { student = { ...prevfresherData.toObject(), semester: '' } }
+                else { student = { ...prevrenewalData.toObject(), semester: '' } }
             }
         }
 
@@ -553,12 +552,12 @@ app.get('/api/admin/students', async (req, res) => {
         }
 
         const response = {
-            ...student.toObject(), scholamt: totalScholamt, studentType: studentType, showOrBlock: showOrBlock
+            ...student, scholamt: totalScholamt, studentType: studentType, showOrBlock: showOrBlock
         }
         res.json(response);
     }
     catch (err) {
-        console.error('Error fetching student data:', err);
+        console.error('Error fetching Student Data : ', err);
         res.status(500).send({ message: 'Internal server error', error: err });
     }
 })
@@ -575,6 +574,21 @@ app.post("/renewal", upload.single("jamath"), async (req, res) => {
     const applicantData = { ...req.body, siblingsNo, siblingsIncome, jamath: req.file ? req.file.path : null };
 
     try {
+
+        const defaultZeroFields = ['semPercentage', 'deeniyathPer', 'prevAttendance', 'classAttendancePer'];
+        defaultZeroFields.forEach(field => {
+            if (
+                applicantData[field] === undefined ||
+                applicantData[field] === '' ||
+                applicantData[field] === null ||
+                applicantData[field] === 'undefined' ||
+                isNaN(applicantData[field])
+            ) {
+                applicantData[field] = 0;
+            } else {
+                applicantData[field] = Number(applicantData[field]);
+            }
+        })
 
         if (studentType === 'Fresher') {
             const acyearData = await AcademicModel.findOne({ active: '1' });
@@ -714,9 +728,9 @@ app.post('/api/admin/student/update', upload.single("jamath"), async (req, res) 
             { registerNo, acyear: academic.acyear }, { $set: updatedFields }, { new: true }
         )
 
-        if (update) {  res.json({ update, success: true }) } 
+        if (update) { res.json({ update, success: true }) }
         else { res.status(404).json({ message: 'Student not found' }) }
-        
+
     } catch (err) {
         console.error("Error in updating a Student :", err);
         res.status(500).json({ message: 'Failed to update student information', error: err });
