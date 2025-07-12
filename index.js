@@ -24,7 +24,7 @@ app.use(cors({
     methods: ["GET", "POST", "PATCH", "DELETE", "PUT"],
 }))
 
-app.use(express.json())
+app.use(express.json()) 
 //Put reg.no. get the data freshform 
 // app.use('/api/students', Student);
 app.use('/api/dashboard', Dashboard);
@@ -624,7 +624,6 @@ app.post("/renewal", upload.single("jamath"), async (req, res) => {
 app.post("/fresh", upload.single("jamath"), async (req, res) => {
 
     try {
-
         const {registerNo} = req.body;
         const yearOfPassing = req.body.yearOfPassing && req.body.yearOfPassing !== "undefined" ? Number(req.body.yearOfPassing) : null;
         const siblingsNo = req.body.siblingsNo && req.body.siblingsNo !== "undefined" ? Number(req.body.siblingsNo) : null;
