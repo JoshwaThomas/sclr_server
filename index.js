@@ -610,7 +610,6 @@ app.put("/freshsemUpdate", async (req, res) => {
             const remark = remarks[registerNo];
             const arrear = arrears[registerNo];
             const academic = await AcademicModel.findOne({ active: '1' });
-            acyear: academic.acyear
 
             const renewalUser = await RenewalModel.findOne({ registerNo, acyear: academic.acyear });
             if (renewalUser) {
@@ -640,4 +639,88 @@ app.put("/freshsemUpdate", async (req, res) => {
 
 // ----------------------------------------------------------------------------------------------------------------
 
-// 
+// Staaf Work Progress Report
+
+app.get('/api/admin/staffCounts', async (req, res) => {
+
+    try {
+
+        const academic = await AcademicModel.findOne({ active: '1' });
+
+        // Aided
+        const aidedFresher = await ApplicantModel.countDocuments({ acyear: academic.acyear, procategory: 'Aided' });
+        const aidedFresherUnFinished = await ApplicantModel.countDocuments({ acyear: academic.acyear, procategory: 'Aided', classAttendancePer: 0 });
+        const aidedRenewal = await RenewalModel.countDocuments({ acyear: academic.acyear, procategory: 'Aided' });
+        const aidedRenewalUnFinished = await RenewalModel.countDocuments({ acyear: academic.acyear, procategory: 'Aided', classAttendancePer: 0 });
+        const aidedTotal = aidedFresher + aidedRenewal;
+        const aidedUnFinished = aidedFresherUnFinished + aidedRenewalUnFinished;
+        const aidedFinished = aidedTotal - aidedUnFinished;
+
+        // SFM
+        const sfmFresher = await ApplicantModel.countDocuments({ acyear: academic.acyear, procategory: 'SFM' });
+        const sfmFresherUnFinished = await ApplicantModel.countDocuments({ acyear: academic.acyear, procategory: 'SFM', classAttendancePer: 0 });
+        const sfmRenewal = await RenewalModel.countDocuments({ acyear: academic.acyear, procategory: 'SFM' });
+        const sfmRenewalUnFinished = await RenewalModel.countDocuments({ acyear: academic.acyear, procategory: 'SFM', classAttendancePer: 0 });
+        const sfmTotal = sfmFresher + sfmRenewal;
+        const sfmUnFinished = sfmFresherUnFinished + sfmRenewalUnFinished;
+        const sfmFinished = sfmTotal - sfmUnFinished;
+
+        // SFW
+        const sfwFresher = await ApplicantModel.countDocuments({ acyear: academic.acyear, procategory: 'SFW' });
+        const sfwFresherUnFinished = await ApplicantModel.countDocuments({ acyear: academic.acyear, procategory: 'SFW', classAttendancePer: 0 });
+        const sfwRenewal = await RenewalModel.countDocuments({ acyear: academic.acyear, procategory: 'SFW' });
+        const sfwRenewalUnFinished = await RenewalModel.countDocuments({ acyear: academic.acyear, procategory: 'SFW', classAttendancePer: 0 });
+        const sfwTotal = sfwFresher + sfwRenewal;
+        const sfwUnFinished = sfwFresherUnFinished + sfwRenewalUnFinished;
+        const sfwFinished = sfwTotal - sfwUnFinished;
+
+        // Deeniyath - Men
+        const deeniyathMenFresher = await ApplicantModel.countDocuments({ acyear: academic.acyear, religion: 'ISLAM', procategory: { $in: ['Aided', 'SFM'] } });
+        const deeniyathMenFresherUnFinished = await ApplicantModel.countDocuments({ acyear: academic.acyear, religion: 'ISLAM', deeniyathPer: 0, procategory: { $in: ['Aided', 'SFM'] } });
+        const deeniyathMenRenewal = await RenewalModel.countDocuments({ acyear: academic.acyear, religion: 'ISLAM', procategory: { $in: ['Aided', 'SFM'] } });
+        const deeniyathMenRenewalUnFinished = await RenewalModel.countDocuments({ acyear: academic.acyear, religion: 'ISLAM', deeniyathPer: 0, procategory: { $in: ['Aided', 'SFM'] } });
+        const deeniyathMenTotal = deeniyathMenFresher + deeniyathMenRenewal;
+        const deeniyathMenUnFinished = deeniyathMenFresherUnFinished + deeniyathMenRenewalUnFinished;
+        const deeniyathMenFinished = deeniyathMenTotal - deeniyathMenUnFinished;
+
+        // Deeniyath - Women
+        const deeniyathWomenFresher = await ApplicantModel.countDocuments({ acyear: academic.acyear, religion: 'ISLAM', procategory: 'SFW' });
+        const deeniyathWomenFresherUnFinished = await ApplicantModel.countDocuments({ acyear: academic.acyear, religion: 'ISLAM', deeniyathPer: 0, procategory: 'SFW' });
+        const deeniyathWomenRenewal = await RenewalModel.countDocuments({ acyear: academic.acyear, religion: 'ISLAM', procategory: 'SFW' });
+        const deeniyathWomenRenewalUnFinished = await RenewalModel.countDocuments({ acyear: academic.acyear, religion: 'ISLAM', deeniyathPer: 0, procategory: 'SFW' });
+        const deeniyathWomenTotal = deeniyathWomenFresher + deeniyathWomenRenewal;
+        const deeniyathWomenUnFinished = deeniyathWomenFresherUnFinished + deeniyathWomenRenewalUnFinished;
+        const deeniyathWomenFinished = deeniyathWomenTotal - deeniyathWomenUnFinished;
+
+        // Moral - Men
+        const moralMenFresher = await ApplicantModel.countDocuments({ acyear: academic.acyear, religion: { $in: ['HINDU', 'CHRISTIAN'] }, procategory: { $in: ['Aided', 'SFM'] } });
+        const moralMenFresherUnFinished = await ApplicantModel.countDocuments({ acyear: academic.acyear, religion: { $in: ['HINDU', 'CHRISTIAN'] }, deeniyathPer: 0, procategory: { $in: ['Aided', 'SFM'] } });
+        const moralMenRenewal = await RenewalModel.countDocuments({ acyear: academic.acyear, religion: { $in: ['HINDU', 'CHRISTIAN'] }, procategory: { $in: ['Aided', 'SFM'] } });
+        const moralMenRenewalUnFinished = await RenewalModel.countDocuments({ acyear: academic.acyear, religion: { $in: ['HINDU', 'CHRISTIAN'] }, deeniyathPer: 0, procategory: { $in: ['Aided', 'SFM'] } });
+        const moralMenTotal = moralMenFresher + moralMenRenewal;
+        const moralMenUnFinished = moralMenFresherUnFinished + moralMenRenewalUnFinished;
+        const moralMenFinished = moralMenTotal - moralMenUnFinished;
+
+        // Moral - Women
+        const moralWomenFresher = await ApplicantModel.countDocuments({ acyear: academic.acyear, religion: { $in: ['HINDU', 'CHRISTIAN'] }, procategory: 'SFW' });
+        const moralWomenFresherUnFinished = await ApplicantModel.countDocuments({ acyear: academic.acyear, religion: { $in: ['HINDU', 'CHRISTIAN'] }, procategory: 'SFW', moralInstructionPer: 0 });
+        const moralWomenRenewal = await RenewalModel.countDocuments({ acyear: academic.acyear, religion: { $in: ['HINDU', 'CHRISTIAN'] }, procategory: 'SFW' });
+        const moralWomenRenewalUnFinished = await RenewalModel.countDocuments({ acyear: academic.acyear, religion: { $in: ['HINDU', 'CHRISTIAN'] }, procategory: 'SFW', moralInstructionPer: 0 });
+        const moralWomenTotal = moralWomenFresher + moralWomenRenewal;
+        const moralWomenUnFinished = moralWomenFresherUnFinished + moralWomenRenewalUnFinished;
+        const moralWomenFinished = moralWomenTotal - moralWomenUnFinished;
+
+        return res.json({
+            aided: { total: aidedTotal, finished: aidedFinished, unfinished: aidedUnFinished },
+            sfm: { total: sfmTotal, finished: sfmFinished, unfinished: sfmUnFinished },
+            sfw: { total: sfwTotal, finished: sfwFinished, unfinished: sfwUnFinished },
+            deeniyathMen: { total: deeniyathMenTotal, finished: deeniyathMenFinished, unfinished: deeniyathMenUnFinished },
+            deeniyathWomen: { total: deeniyathWomenTotal, finished: deeniyathWomenFinished, unfinished: deeniyathWomenUnFinished },
+            moralMen: { total: moralMenTotal, finished: moralMenFinished, unfinished: moralMenUnFinished },
+            moralWomen: { total: moralWomenTotal, finished: moralWomenFinished, unfinished: moralWomenUnFinished }
+        });
+    } catch (error) {
+        console.error("Error fetching staff counts:", error);
+        return res.status(500).json({ message: "Internal Server Error" });
+    }
+})
