@@ -16,7 +16,7 @@ router.get('/counts', async (req, res) => {
         }
         const acyear = activeAcademicYear.acyear;
         const totalRenewal = await RenewalModel.countDocuments({ acyear });
-        const totalFresher = await ApplicantModel.countDocuments({ acyear });
+        const totalFresher = await ApplicantModel.countDocuments({ acyear }); 
         const totalApplicants = totalRenewal + totalFresher
         const totalDonars = await DonarModel.countDocuments();
         const ugCount = await ApplicantModel.countDocuments({ acyear, fresherOrRenewal: 'Fresher' });
@@ -77,6 +77,7 @@ router.get('/counts', async (req, res) => {
         const rpsSem = await RenewalModel.countDocuments({ acyear, ugOrPg: 'PG', semester: 'II' });
         const rptSem = await RenewalModel.countDocuments({ acyear, ugOrPg: 'PG', semester: 'III' });
         const rpfourSem = await RenewalModel.countDocuments({ acyear, ugOrPg: 'PG', semester: 'IV' });
+        
         // console.log('rf', rfSem, 'rs', rsSem, 'rt', rtSem, 'rf', rfourSem, 'rfi', rfivSem, 'rsi', rsixSem, 'rpgf',rpfSem, 'rps',rpsSem, 'rpt',rptSem, 'rpf',rpfourSem)
 
 
@@ -174,6 +175,9 @@ router.get('/counts', async (req, res) => {
                 mwCompleted: ((mwTotal + mwTotalr) - (mwCount + mwCountr)),
                 semCount: semCount + semCountr,
                 semComplete: (totalApplication - (semCount + semCountr)),
+                totalFresher:totalFresher,
+                freshPer:((totalFresher/totalApplicants)*100),
+                renewalPer:((totalRenewal/totalApplicants)*100)
 
 
 
