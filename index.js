@@ -703,9 +703,9 @@ app.get('/api/admin/staffCounts', async (req, res) => {
 
         // Moral - Women
         const moralWomenFresher = await ApplicantModel.countDocuments({ acyear: academic.acyear, religion: { $in: ['HINDU', 'CHRISTIAN'] }, procategory: 'SFW' });
-        const moralWomenFresherUnFinished = await ApplicantModel.countDocuments({ acyear: academic.acyear, religion: { $in: ['HINDU', 'CHRISTIAN'] }, procategory: 'SFW', moralInstructionPer: 0 });
+        const moralWomenFresherUnFinished = await ApplicantModel.countDocuments({ acyear: academic.acyear, religion: { $in: ['HINDU', 'CHRISTIAN'] }, procategory: 'SFW', deeniyathPer: 0 });
         const moralWomenRenewal = await RenewalModel.countDocuments({ acyear: academic.acyear, religion: { $in: ['HINDU', 'CHRISTIAN'] }, procategory: 'SFW' });
-        const moralWomenRenewalUnFinished = await RenewalModel.countDocuments({ acyear: academic.acyear, religion: { $in: ['HINDU', 'CHRISTIAN'] }, procategory: 'SFW', moralInstructionPer: 0 });
+        const moralWomenRenewalUnFinished = await RenewalModel.countDocuments({ acyear: academic.acyear, religion: { $in: ['HINDU', 'CHRISTIAN'] }, procategory: 'SFW', deeniyathPer: 0 });
         const moralWomenTotal = moralWomenFresher + moralWomenRenewal;
         const moralWomenUnFinished = moralWomenFresherUnFinished + moralWomenRenewalUnFinished;
         const moralWomenFinished = moralWomenTotal - moralWomenUnFinished;
