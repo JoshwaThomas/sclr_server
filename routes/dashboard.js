@@ -215,6 +215,7 @@ router.get('/columnBarData', async (req, res) => {
                 $match: {
                     "scholarshipInfo.acyear": acyear,
                     "scholarshipInfo.scholamt": { $gt: 0 },
+                    action:1
                 },
             },
             {
