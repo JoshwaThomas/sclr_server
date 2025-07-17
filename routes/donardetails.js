@@ -9,75 +9,20 @@ const ScholtypeModel = require('../models/scholtype');
 const ApplicantModel = require('../models/fersh');
 const RenewalModel = require('../models/renewal');
 
-router.get('/', async (req, res) =>{
-    try{
-        const Donar = await DonarModel.findOne({mobileNo: req.params.mobileNo});
-        if(Donar){
+router.get('/', async (req, res) => {
+    try {
+        const Donar = await DonarModel.findOne({ mobileNo: req.params.mobileNo });
+        if (Donar) {
             res.json(Donar);
         }
-        else{
+        else {
             res.status(404).send('Donar No not found');
         }
     }
-    catch(err){
+    catch (err) {
         res.status(500).send(err);
     }
 });
-
-// router.post('/donar', (req, res) => {
-//     DonarDataModel.create(req.body)
-//         .then(donor => res.json(donor))
-//         .catch(err => res.json(err));
-//     DonarDataModel.findOne({pan: req.params.pan});
-//         DonarModel.save()
-//         .then(update => res.json(update))
-//         .catch(err => res.json(err));
-// });
-
-// router.post('/donar', async (req, res) => {
-//     try {
-//         const { did, amount, zakkathamt } = req.body;
-
-//         // Check if donor exists in DonarModel
-//         let donar = await DonarModel.findOne({ did });
-//         console.log('Did :', did);
-
-//         if (donar) {
-//             const newzakkathBalance = donar.zakkathbal + parseFloat(zakkathamt);
-//             const newBalance = donar.balance + parseFloat(amount);
-//             console.log("Balance :",newBalance);
-//             console.log("Zakkath Balance :",newzakkathBalance);
-//             // If donor exists, update the donor information
-//             // await DonarModel.findOneAndUpdate({ did }, { ...req.body, balance: newBalance, zakkathbal: newzakkathBalance}, { new: true });
-
-//             // donar = await DonarDataModel.create(req.body);
-//             const updatedData = {
-//                 ...donar.toObject(),
-//                 ...req.body,
-//                 balance: newBalance,
-//                 zakkathbal: newzakkathBalance,
-//             };
-
-//             donar = await DonarModel.findOneAndUpdate({ did }, updatedData, { new: true });
-//             await DonarDataModel.create(req.body);
-
-//             res.json(donar);
-            
-           
-//         } else {
-//             // If donor doesn't exist, create a new entry in DonarDataModel
-//             donar = await DonarDataModel.create(req.body);
-
-//             // Save the same data in DonarModel
-//             const newDonar = new DonarModel(req.body);
-//             await newDonar.save();
-
-//             res.json(donar);
-//         }
-//     } catch (err) {
-//         res.status(500).json(err);
-//     }
-// });
 router.post('/donar', async (req, res) => {
     try {
         const { did, amount = '0', zakkathamt = '0' } = req.body;
@@ -169,11 +114,11 @@ router.get('/donor/:did', async (req, res) => {
     }
 });
 
-router.get('/donar', (req,res) => {
-    
+router.get('/donar', (req, res) => {
+
     DonarModel.find()
-    .then(donars => res.json(donars))
-    .catch(err => res.json(err));
+        .then(donars => res.json(donars))
+        .catch(err => res.json(err));
 });
 router.get('/scholtypes', (req, res) => {
     DonarModel.distinct("scholtype")
@@ -192,17 +137,17 @@ router.get('/panlist', (req, res) => {
         .then(panList => res.json(panList))
         .catch(err => res.status(500).json({ error: err.message }));
 });
-router.get('/donar', (req,res) => {
-    
+router.get('/donar', (req, res) => {
+
     const { pan } = req.body;
-    DonarModel.find({pan})
-    .then(donars => res.json(donars))
-    .catch(err => res.json(err));
+    DonarModel.find({ pan })
+        .then(donars => res.json(donars))
+        .catch(err => res.json(err));
 });
-router.get('/donardata', (req,res) => {
+router.get('/donardata', (req, res) => {
     DonarDataModel.find()
-    .then(users => res.json(users))
-    .catch(err => res.json(err));
+        .then(users => res.json(users))
+        .catch(err => res.json(err));
 });
 
 //donor amt check and transfer the amt 
@@ -213,7 +158,7 @@ router.put('/donar/:id', async (req, res) => {
             const balanceField = req.body.balanceField || 'balance';
             if (donor[balanceField] >= req.body.amount) {
                 donor[balanceField] -= parseFloat(req.body.amount);
-                console.log("hello",donor[balanceField])
+                console.log("hello", donor[balanceField])
                 await donor.save();
                 res.status(200).json({ updatedBalance: donor[balanceField] });
             } else {
@@ -230,14 +175,14 @@ router.put('/donar/:id', async (req, res) => {
 // Amount save routes
 router.post('/freshamt', async (req, res) => {
     const registerNo = req.body
-    console.log({registerNo})
+    console.log({ registerNo })
     try {
         const donor = await DonarModel.findById(req.body.scholdonar);
         if (donor) {
-            console.log('donor',donor)
+            console.log('donor', donor)
             await AmountModel.create(req.body);
             res.status(201).send('Amount data saved successfully');
-        } 
+        }
     } catch (err) {
         res.status(500).send(err);
     }
@@ -246,7 +191,7 @@ router.post('/freshamt', async (req, res) => {
 // Update the Donor Details find and res
 router.get('/donarUpdate', async (req, res) => {
     try {
-        const { did } = req.query; 
+        const { did } = req.query;
         // Check if donor exists in DonarModel
         let donar = await DonarDataModel.findOne({ did });
 
@@ -268,12 +213,12 @@ router.post('/donarUpdate', async (req, res) => {
         let donar = await DonarDataModel.findOne({ did });
 
         if (donar) {
-           
+
             donar = await DonarDataModel.updateMany({ did }, req.body, { new: true });
             donar = await DonarModel.findOneAndUpdate({ did }, req.body, { new: true });
-            
+
             res.json(donar);
-        } 
+        }
     } catch (err) {
         res.status(500).json(err);
     }
@@ -286,20 +231,20 @@ router.post('/scholtype', async (req, res) => {
         const { scholtype } = req.body;
 
         // Check if scholar Type exists
-        ScholtypeModel.findOne({scholtype})
-        .then(existingType=>{
-            if(existingType) {
-                return res.json({success: false, message: 'ScholarType Already Existing'})
-            }
-        ScholtypeModel.create(req.body)
-        .then(users => res.json({ success: true, users }))
-        .catch(err => res.json({ success: false, error: err }));
-        })
-        .catch(err => res.json({ success: false, error: err }));
+        ScholtypeModel.findOne({ scholtype })
+            .then(existingType => {
+                if (existingType) {
+                    return res.json({ success: false, message: 'ScholarType Already Existing' })
+                }
+                ScholtypeModel.create(req.body)
+                    .then(users => res.json({ success: true, users }))
+                    .catch(err => res.json({ success: false, error: err }));
+            })
+            .catch(err => res.json({ success: false, error: err }));
     }
     catch (err) {
         res.status(500).send(err);
-    }  
+    }
 });
 
 //All the Report
@@ -324,7 +269,7 @@ router.get('/allreport', async (req, res) => {
                 ...donar ? donar.toObject() : {},
                 donarName: donar ? donar.name : null,
                 smobileNo: applicant ? applicant.mobileNo : null,
-                name: applicant ? applicant.name : null, 
+                name: applicant ? applicant.name : null,
                 fresherOrRenewal: amount ? amount.fresherOrRenewal : null,
             };
         });
@@ -341,7 +286,7 @@ router.get('/studreport', async (req, res) => {
 
         const updatedApplicants = applicants.map(applicant => {
             let actionStatus;
-            switch(applicant.action) {
+            switch (applicant.action) {
                 case 0:
                     actionStatus = 'pending';
                     break;
@@ -359,9 +304,9 @@ router.get('/studreport', async (req, res) => {
                 action: actionStatus
             };
         });
-        const updatedRenewal = renewals.map(renewal =>{
+        const updatedRenewal = renewals.map(renewal => {
             let actionStatus;
-            switch(renewal.action) {
+            switch (renewal.action) {
                 case 0:
                     actionStatus = 'pending';
                     break;
@@ -387,15 +332,15 @@ router.get('/studreport', async (req, res) => {
     }
 });
 
-router.get("/donoravl", (req,res) => {
+router.get("/donoravl", (req, res) => {
     DonarModel.find()
-    .then(rusers => res.json(rusers))
-    .catch(err => res.json(err));
+        .then(rusers => res.json(rusers))
+        .catch(err => res.json(err));
 })
-router.get("/donoracyear-report", (req,res) => {
+router.get("/donoracyear-report", (req, res) => {
     DonarDataModel.find()
-    .then(rusers => res.json(rusers))
-    .catch(err => res.json(err));
+        .then(rusers => res.json(rusers))
+        .catch(err => res.json(err));
 })
 
 router.get('/last-donor-id', async (req, res) => {
@@ -420,5 +365,116 @@ router.get('/last-donor-id', async (req, res) => {
         res.status(500).json({ error: 'Error fetching last donor ID' });
     }
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//donor amt check and transfer the amt 
+// Batch donor deduction route
+router.put('/donar/multiple', async (req, res) => {
+
+    
+    try {
+        const { donors } = req.body;
+
+        if (!Array.isArray(donors) || donors.length === 0) {
+            return res.status(400).json({ message: "Invalid or empty donor list." });
+        }
+
+        const insufficient = [];
+
+        // Check all balances first
+        for (const entry of donors) {
+            const { donorId, amount, balanceField = 'balance' } = entry;
+            const donor = await DonarModel.findById(donorId);
+            if (!donor || donor[balanceField] < parseFloat(amount)) {
+                insufficient.push({
+                    donorId,
+                    available: donor?.[balanceField] ?? 0,
+                    required: amount
+                });
+            }
+        }
+
+        if (insufficient.length > 0) {
+            return res.status(400).json({
+                message: "Insufficient balance for one or more donors.",
+                insufficient
+            });
+        }
+
+        // Deduct amounts now
+        for (const entry of donors) {
+            const { donorId, amount, balanceField = 'balance' } = entry;
+            const donor = await DonarModel.findById(donorId);
+            donor[balanceField] -= parseFloat(amount);
+            await donor.save();
+        }
+
+        return res.status(200).json({ success: true, message: "All donor balances updated." });
+    } catch (err) {
+        console.error("Error in /donar/multiple:", err);
+        return res.status(500).json({ message: "Server error", error: err.message });
+    }
+});
+
+
+// Amount save routes
+router.post('/freshamt', async (req, res) => {
+    const { registerNo, name, dept, scholtype, scholdonar, scholamt, acyear, fresherOrRenewal } = req.body;
+    console.log("Received body in /freshamt:", req.body);
+
+    try {
+        if (!scholdonar) {
+            return res.status(400).json({ success: false, message: 'Donor ID is required' });
+        }
+
+        const donor = await DonarModel.findById(scholdonar);
+        if (!donor) {
+            return res.status(404).json({ success: false, message: 'Donor not found' });
+        }
+
+        console.log("Found donor:", donor.name); // ✅ now it's safe
+
+        const amountDoc = await AmountModel.create({
+            registerNo,
+            name,
+            dept,
+            scholtype,
+            scholdonar,
+            scholamt,
+            acyear,
+            fresherOrRenewal
+        });
+
+        return res.status(201).json({
+            success: true,
+            message: 'Amount data saved successfully',
+            data: amountDoc
+        });
+    } catch (err) {
+        console.error("Error saving scholarship:", err);
+        return res.status(500).json({
+            success: false,
+            message: 'Internal Server Error',
+            error: err.message
+        });
+    }
+});
+
+
+
 
 module.exports = router;
