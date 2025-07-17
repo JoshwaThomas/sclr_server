@@ -379,37 +379,32 @@ router.get('/last-donor-id', async (req, res) => {
 
 
 
+// ----------------------------------------------------------------------------------------------------------------
 
+// Donar Amount Deduction 
 
-//donor amt check and transfer the amt 
-// Batch donor deduction route
 router.put('/donar/multiple', async (req, res) => {
+
     try {
+
         const { donors } = req.body;
 
-        if (!Array.isArray(donors) || donors.length === 0) {
-            return res.status(400).json({ success: false, message: "Donor list is empty or invalid" });
-        }
+        if (!Array.isArray(donors) || donors.length === 0) { return res.status(400).json({ success: false, message: "Donor list is empty or invalid" }) }
 
         const insufficient = [];
 
-        // Step 1: Check balances
         for (const { donorId, amount, balanceField = 'balance' } of donors) {
             const donor = await DonarModel.findById(donorId);
             if (!donor || donor[balanceField] < parseFloat(amount)) {
                 insufficient.push({
-                    donorId,
+                    donorId, required: amount,
                     available: donor?.[balanceField] ?? 0,
-                    required: amount
-                });
+                })
             }
         }
 
-        if (insufficient.length > 0) {
-            return res.status(400).json({ success: false, message: "Insufficient balance", insufficient });
-        }
+        if (insufficient.length > 0) { return res.status(400).json({ success: false, message: "Insufficient balance", insufficient }) }
 
-        // Step 2: Deduct amounts
         for (const { donorId, amount, balanceField = 'balance' } of donors) {
             const donor = await DonarModel.findById(donorId);
             donor[balanceField] -= parseFloat(amount);
@@ -424,46 +419,31 @@ router.put('/donar/multiple', async (req, res) => {
     }
 });
 
+// ----------------------------------------------------------------------------------------------------------------
 
-// Amount save routes
+// Student Data Saving in Amount Model
+
 router.post('/freshamt', async (req, res) => {
+
     const { registerNo, name, dept, scholtype, scholdonar, scholamt, acyear, fresherOrRenewal } = req.body;
 
     try {
-        if (!scholdonar) {
-            return res.status(400).json({ success: false, message: 'Donor ID missing' });
-        }
 
+        if (!scholdonar) { return res.status(400).json({ success: false, message: 'Donor ID missing' }) }
         const donor = await DonarModel.findById(scholdonar);
-        if (!donor) {
-            return res.status(404).json({ success: false, message: 'Donor not found' });
-        }
+        if (!donor) { return res.status(404).json({ success: false, message: 'Donor not found' }) }
 
         const amountDoc = await AmountModel.create({
-            registerNo,
-            name,
-            dept,
-            scholtype,
-            scholdonar,
-            scholamt,
-            acyear,
-            fresherOrRenewal
+            registerNo, name, dept, scholtype,
+            scholdonar, scholamt, acyear, fresherOrRenewal
         });
 
-        return res.status(201).json({
-            success: true,
-            message: 'Scholarship entry saved',
-            data: amountDoc
-        });
+        return res.status(201).json({ success: true, message: 'Scholarship entry saved', data: amountDoc });
 
     } catch (err) {
-        console.error("Error in /freshamt:", err);
+        console.error("Error in Fresh Amt :", err);
         return res.status(500).json({ success: false, message: 'Server error', error: err.message });
     }
 });
-
-
-
-
 
 module.exports = router;
