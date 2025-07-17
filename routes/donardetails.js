@@ -151,42 +151,42 @@ router.get('/donardata', (req, res) => {
 });
 
 //donor amt check and transfer the amt 
-router.put('/donar/:id', async (req, res) => {
-    try {
-        const donor = await DonarModel.findById(req.params.id);
-        if (donor) {
-            const balanceField = req.body.balanceField || 'balance';
-            if (donor[balanceField] >= req.body.amount) {
-                donor[balanceField] -= parseFloat(req.body.amount);
-                console.log("hello", donor[balanceField])
-                await donor.save();
-                res.status(200).json({ updatedBalance: donor[balanceField] });
-            } else {
-                res.status(400).json({ message: 'Insufficient balance', availableBalance: donor[balanceField] });
-            }
-        } else {
-            res.status(404).send('Donor not found');
-        }
-    } catch (err) {
-        res.status(500).send(err);
-    }
-});
+// router.put('/donar/:id', async (req, res) => {
+//     try {
+//         const donor = await DonarModel.findById(req.params.id);
+//         if (donor) {
+//             const balanceField = req.body.balanceField || 'balance';
+//             if (donor[balanceField] >= req.body.amount) {
+//                 donor[balanceField] -= parseFloat(req.body.amount);
+//                 console.log("hello", donor[balanceField])
+//                 await donor.save();
+//                 res.status(200).json({ updatedBalance: donor[balanceField] });
+//             } else {
+//                 res.status(400).json({ message: 'Insufficient balance', availableBalance: donor[balanceField] });
+//             }
+//         } else {
+//             res.status(404).send('Donor not found');
+//         }
+//     } catch (err) {
+//         res.status(500).send(err);
+//     }
+// });
 
-// Amount save routes
-router.post('/freshamt', async (req, res) => {
-    const registerNo = req.body
-    console.log({ registerNo })
-    try {
-        const donor = await DonarModel.findById(req.body.scholdonar);
-        if (donor) {
-            console.log('donor', donor)
-            await AmountModel.create(req.body);
-            res.status(201).send('Amount data saved successfully');
-        }
-    } catch (err) {
-        res.status(500).send(err);
-    }
-});
+// // Amount save routes
+// router.post('/freshamt', async (req, res) => {
+//     const registerNo = req.body
+//     console.log({ registerNo })
+//     try {
+//         const donor = await DonarModel.findById(req.body.scholdonar);
+//         if (donor) {
+//             console.log('donor', donor)
+//             await AmountModel.create(req.body);
+//             res.status(201).send('Amount data saved successfully');
+//         }
+//     } catch (err) {
+//         res.status(500).send(err);
+//     }
+// });
 
 // Update the Donor Details find and res
 router.get('/donarUpdate', async (req, res) => {
@@ -384,20 +384,17 @@ router.get('/last-donor-id', async (req, res) => {
 //donor amt check and transfer the amt 
 // Batch donor deduction route
 router.put('/donar/multiple', async (req, res) => {
-
-    
     try {
         const { donors } = req.body;
 
         if (!Array.isArray(donors) || donors.length === 0) {
-            return res.status(400).json({ message: "Invalid or empty donor list." });
+            return res.status(400).json({ success: false, message: "Donor list is empty or invalid" });
         }
 
         const insufficient = [];
 
-        // Check all balances first
-        for (const entry of donors) {
-            const { donorId, amount, balanceField = 'balance' } = entry;
+        // Step 1: Check balances
+        for (const { donorId, amount, balanceField = 'balance' } of donors) {
             const donor = await DonarModel.findById(donorId);
             if (!donor || donor[balanceField] < parseFloat(amount)) {
                 insufficient.push({
@@ -409,24 +406,21 @@ router.put('/donar/multiple', async (req, res) => {
         }
 
         if (insufficient.length > 0) {
-            return res.status(400).json({
-                message: "Insufficient balance for one or more donors.",
-                insufficient
-            });
+            return res.status(400).json({ success: false, message: "Insufficient balance", insufficient });
         }
 
-        // Deduct amounts now
-        for (const entry of donors) {
-            const { donorId, amount, balanceField = 'balance' } = entry;
+        // Step 2: Deduct amounts
+        for (const { donorId, amount, balanceField = 'balance' } of donors) {
             const donor = await DonarModel.findById(donorId);
             donor[balanceField] -= parseFloat(amount);
             await donor.save();
         }
 
-        return res.status(200).json({ success: true, message: "All donor balances updated." });
+        return res.status(200).json({ success: true, message: "Donor balances updated successfully" });
+
     } catch (err) {
         console.error("Error in /donar/multiple:", err);
-        return res.status(500).json({ message: "Server error", error: err.message });
+        return res.status(500).json({ success: false, message: "Server error", error: err.message });
     }
 });
 
@@ -434,19 +428,16 @@ router.put('/donar/multiple', async (req, res) => {
 // Amount save routes
 router.post('/freshamt', async (req, res) => {
     const { registerNo, name, dept, scholtype, scholdonar, scholamt, acyear, fresherOrRenewal } = req.body;
-    console.log("Received body in /freshamt:", req.body);
 
     try {
         if (!scholdonar) {
-            return res.status(400).json({ success: false, message: 'Donor ID is required' });
+            return res.status(400).json({ success: false, message: 'Donor ID missing' });
         }
 
         const donor = await DonarModel.findById(scholdonar);
         if (!donor) {
             return res.status(404).json({ success: false, message: 'Donor not found' });
         }
-
-        console.log("Found donor:", donor.name); // ✅ now it's safe
 
         const amountDoc = await AmountModel.create({
             registerNo,
@@ -461,18 +452,16 @@ router.post('/freshamt', async (req, res) => {
 
         return res.status(201).json({
             success: true,
-            message: 'Amount data saved successfully',
+            message: 'Scholarship entry saved',
             data: amountDoc
         });
+
     } catch (err) {
-        console.error("Error saving scholarship:", err);
-        return res.status(500).json({
-            success: false,
-            message: 'Internal Server Error',
-            error: err.message
-        });
+        console.error("Error in /freshamt:", err);
+        return res.status(500).json({ success: false, message: 'Server error', error: err.message });
     }
 });
+
 
 
 
