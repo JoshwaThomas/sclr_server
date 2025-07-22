@@ -23,70 +23,13 @@ router.get('/', async (req, res) => {
         res.status(500).send(err);
     }
 });
-router.post('/donar', async (req, res) => {
-    try {
-        const { did, amount = '0', zakkathamt = '0' } = req.body;
-
-        // Parse amounts to ensure they are numbers
-        const parsedAmount = parseFloat(amount) || 0;
-        const parsedZakkathAmt = parseFloat(zakkathamt) || 0;
-
-        // Check if donor exists in DonarModel
-        let donar = await DonarModel.findOne({ did });
-
-        if (donar) {
-            const newZakkathBalance = donar.zakkathbal + parsedZakkathAmt;
-            const newBalance = donar.balance + parsedAmount;
-            console.log("Balance:", newBalance);
-            console.log("Zakkath Balance:", newZakkathBalance);
-
-            // If donor exists, update the donor information
-            donar = await DonarModel.findOneAndUpdate(
-                { did },
-                { ...req.body, balance: newBalance, zakkathbal: newZakkathBalance },
-                { new: true }
-            );
-
-            donar = await DonarDataModel.create(req.body);
-
-            res.json(donar);
-        } else {
-            // If donor doesn't exist, create a new entry in DonarDataModel
-            donar = await DonarDataModel.create(req.body);
-
-            // Save the same data in DonarModel
-            const newDonar = new DonarModel(req.body);
-            await newDonar.save();
-
-            res.json(donar);
-        }
-    } catch (err) {
-        console.error("Error saving donor data:", err);
-        res.status(500).json(err);
-    }
-});
 
 
-router.post("/donardata", async (req, res) => {
-    const { did } = req.body;
 
-    try {
-        const existingDonar = await DonarDataModel.findOne({ did });
-        if (existingDonar) {
-            return res.json({ success: false, message: 'Donor Already Existing' });
-        }
 
-        const donarModelData = await DonarModel.create(req.body);
-        const donarDataModelData = await DonarDataModel.create(req.body);
-        // console.log(donarModelData)
-        // console.log(donarDataModelData)
 
-        return res.json({ success: true, donarModelData, donarDataModelData });
-    } catch (err) {
-        console.error("Error saving donor data:", err);
-        return res.json({ success: false, error: err });
-    }
-});
+
+
 
 // router.get('/donor/:name', async (req, res) => {
 //     try {
@@ -343,28 +286,7 @@ router.get("/donoracyear-report", (req, res) => {
         .catch(err => res.json(err));
 })
 
-router.get('/last-donor-id', async (req, res) => {
-    try {
-        const lastDonor = await DonarModel.aggregate([
-            {
-                $addFields: {
-                    didAsInt: { $toInt: "$did" }
-                }
-            },
-            { $sort: { didAsInt: -1 } },
-            { $limit: 1 }
-        ]).exec();
 
-        const lastDid = lastDonor.length > 0 ? lastDonor[0].didAsInt : 0;
-
-        console.log('lastDonor :', lastDonor[0]);
-        console.log('lastDid :', lastDid);
-
-        res.json({ lastDid });
-    } catch (error) {
-        res.status(500).json({ error: 'Error fetching last donor ID' });
-    }
-});
 
 
 
@@ -445,5 +367,92 @@ router.post('/freshamt', async (req, res) => {
         return res.status(500).json({ success: false, message: 'Server error', error: err.message });
     }
 });
+
+// ----------------------------------------------------------------------------------------------------------------
+
+// Find Last Donar Id for Adding Donar
+
+router.get('/last-donor-id', async (req, res) => {
+
+    try {
+
+        const lastDonor = await DonarModel.aggregate([
+            { $addFields: { didAsInt: { $toInt: "$did" } } },
+            { $sort: { didAsInt: -1 } },
+            { $limit: 1 }
+        ]).exec();
+
+        const lastDid = lastDonor.length > 0 ? lastDonor[0].didAsInt : 0;
+        res.json({ lastDid });
+
+    } catch (error) {
+        console.log("Error in Fetch Last Donar Id for Adding : ", error)
+        res.status(500).json({ error: 'Error fetching last donor ID' });
+    }
+})
+
+// ----------------------------------------------------------------------------------------------------------------
+
+// For Adding Donar
+
+router.post("/donardata", async (req, res) => {
+
+    const { did } = req.body;
+
+    try {
+
+        const existingDonar = await DonarDataModel.findOne({ did });
+
+        if (existingDonar) { return res.json({ success: false, message: 'Donor Already Existing' }) }
+
+        const donarModelData = await DonarModel.create(req.body);
+        const donarDataModelData = await DonarDataModel.create(req.body);
+        return res.json({ success: true, donarModelData, donarDataModelData });
+
+    } catch (err) {
+        console.error("Error saving donor data:", err);
+        return res.json({ success: false, error: err });
+    }
+})
+
+// ----------------------------------------------------------------------------------------------------------------
+
+// Updating Donar Balance
+
+router.post('/donar', async (req, res) => {
+
+    try {
+
+        const { did, amount = '0', zakkathamt = '0' } = req.body;
+        const parsedAmount = parseFloat(amount) || 0;
+        const parsedZakkathAmt = parseFloat(zakkathamt) || 0;
+
+        let existingDonor = await DonarModel.findOne({ did });
+
+        if (existingDonor) {
+
+            const newBalance = (existingDonor.balance || 0) + parsedAmount;
+            const newZakkathBalance = (existingDonor.zakkathbal || 0) + parsedZakkathAmt;
+            await DonarModel.findOneAndUpdate({ did }, { ...req.body, balance: newBalance, zakkathbal: newZakkathBalance }, { new: true })
+            const updatedData = { ...req.body, balance: newBalance, zakkathbal: newZakkathBalance }
+            const newEntry = await DonarDataModel.create(updatedData);
+            return res.json({ success: true, data: newEntry });
+
+        }  else {
+
+            const initialBalance = parsedAmount;
+            const initialZakkathBal = parsedZakkathAmt;
+            const donorData = { ...req.body, balance: initialBalance, zakkathbal: initialZakkathBal }
+            const newDonor = new DonarModel(donorData);
+            await newDonor.save();
+            const newEntry = await DonarDataModel.create(donorData);
+            return res.json({ success: true, data: newEntry });
+        }
+
+    } catch (err) {
+        console.error("Error saving donor data:", err);
+        res.status(500).json({ success: false, error: err.message });
+    }
+})
 
 module.exports = router;
