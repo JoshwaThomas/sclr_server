@@ -94,7 +94,7 @@ app.post("/api/admin/action", async (req, res) => {
         const register = await RenewalModel.findOne({ registerNo, acyear: curAcyear });
         if (!register) {
             const result = await ApplicantModel.findOneAndUpdate(
-                { registerNo },
+                { registerNo ,acyear: curAcyear},
                 { action: '1' },
                 { new: true }
             );
@@ -120,7 +120,7 @@ app.post("/api/admin/actionreject", async (req, res) => {
 
         if (!register) {
             const result = await ApplicantModel.findOneAndUpdate(
-                { registerNo },
+                { registerNo,acyear: curAcyear },
                 { action: '2' },
                 { new: true }
             );
@@ -128,7 +128,7 @@ app.post("/api/admin/actionreject", async (req, res) => {
         } else {
             const result = await RenewalModel.findOneAndUpdate(
                 { registerNo, acyear: curAcyear },
-                { action: '1' },
+                { action: '2' },
                 { new: true }
             );
             return res.json({ success: true, result });
