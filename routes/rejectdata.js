@@ -152,18 +152,18 @@ router.get('/status/:registerNo', async (req, res) => {
 
     try {
 
-        // const amountData = await AmountModel.find({ registerNo });
-        // if (amountData && amountData.length > 0) {
-        //     const totalScholamt = amountData.reduce((sum, entry) => sum + entry.scholamt, 0);
-        //     return res.json({ ...amountData[0]._doc, totalScholamt });
-        // }
+        const amountData = await AmountModel.find({ registerNo });
+        if (amountData && amountData.length > 0) {
+            const totalScholamt = amountData.reduce((sum, entry) => sum + entry.scholamt, 0);
+            return res.json({ ...amountData[0]._doc, totalScholamt });
+        }
 
         const acyearData = await Academic.findOne({ active: '1' });
         if (!acyearData) { return res.status(404).send('Active academic year not found'); }
         const currentAcyear = acyearData.acyear;
 
-        // data = await RejectModel.findOne({ registerNo });
-        // if (data) { return res.json(data) }
+        data = await RejectModel.findOne({ registerNo });
+        if (data) { return res.json(data) }
 
         data = await RenewalModel.findOne({ registerNo, acyear: currentAcyear });
         if (data) { return res.json(data) }
