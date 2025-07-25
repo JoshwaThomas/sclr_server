@@ -233,8 +233,8 @@ router.get('/studstatus', async (req, res) => {
 
         if (applicant) {
 
-            let data = await RejectModel.findOne({registerNo: registerNo, acyear: currAcde.acyear});
-            if (data) {return res.json(data)}
+            // let data = await RejectModel.findOne({registerNo: registerNo, acyear: currAcde.acyear});
+            // if (data) {return res.json(data)}
 
             data = await RenewalModel.findOne({registerNo: registerNo, acyear: currAcde.acyear});
             if (data) {return res.json(data)}
