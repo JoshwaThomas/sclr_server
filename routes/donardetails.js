@@ -308,38 +308,29 @@ router.get("/donoracyear-report", (req, res) => {
 router.put('/donar/multiple', async (req, res) => {
 
     try {
-
         const { donors } = req.body;
 
-        if (!Array.isArray(donors) || donors.length === 0) { return res.status(400).json({ success: false, message: "Donor list is empty or invalid" }) }
-
-        const insufficient = [];
-
-        for (const { donorId, amount, balanceField = 'balance' } of donors) {
-            const donor = await DonarModel.findById(donorId);
-            if (!donor || donor[balanceField] < parseFloat(amount)) {
-                insufficient.push({
-                    donorId, required: amount,
-                    available: donor?.[balanceField] ?? 0,
-                })
-            }
+        if (!Array.isArray(donors) || donors.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: "Donor list is empty or invalid"
+            });
         }
 
-        if (insufficient.length > 0) { return res.status(400).json({ success: false, message: "Insufficient balance", insufficient }) }
-
         for (const { donorId, amount, balanceField = 'balance' } of donors) {
             const donor = await DonarModel.findById(donorId);
+            if (!donor) continue;
             donor[balanceField] -= parseFloat(amount);
             await donor.save();
         }
 
-        return res.status(200).json({ success: true, message: "Donor balances updated successfully" });
+        return res.status(200).json({ success: true, message: "Donor balances updated successfully"})
 
     } catch (err) {
         console.error("Error in /donar/multiple:", err);
         return res.status(500).json({ success: false, message: "Server error", error: err.message });
     }
-});
+})
 
 // ----------------------------------------------------------------------------------------------------------------
 
@@ -438,7 +429,7 @@ router.post('/donar', async (req, res) => {
             const newEntry = await DonarDataModel.create(updatedData);
             return res.json({ success: true, data: newEntry });
 
-        }  else {
+        } else {
 
             const initialBalance = parsedAmount;
             const initialZakkathBal = parsedZakkathAmt;
