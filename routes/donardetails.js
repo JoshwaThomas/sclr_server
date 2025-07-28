@@ -392,10 +392,8 @@ router.post("/donardata", async (req, res) => {
 
     try {
 
-        const existingDonar = await DonarDataModel.findOne({ did });
-
+        const existingDonar = await DonarModel.findOne({ did });
         if (existingDonar) { return res.json({ success: false, message: 'Donor Already Existing' }) }
-
         const donarModelData = await DonarModel.create(req.body);
         const donarDataModelData = await DonarDataModel.create(req.body);
         return res.json({ success: true, donarModelData, donarDataModelData });
